@@ -8,12 +8,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "app_user")
+@Table(name = "users")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AppUser {
+public class Users {
 
     @Id
     @Column(name = "user_id", length = 36, nullable = false, updatable = false)
