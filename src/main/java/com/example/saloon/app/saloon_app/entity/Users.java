@@ -17,7 +17,8 @@ public class Users {
 
     @Id
     @Column(name = "user_id", length = 36, nullable = false, updatable = false)
-    private String userId = UUID.randomUUID().toString();
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long userId;
 
     @Column(name = "name", length = 100, nullable = false)
     private String name;

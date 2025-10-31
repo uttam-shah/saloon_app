@@ -5,13 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserDto {
-    private Long userId;
+public class AddUserRequestDto {
     private String name;
     private String email;
     private String phone;
+    private String passwordHash;
 
 
 }
+
