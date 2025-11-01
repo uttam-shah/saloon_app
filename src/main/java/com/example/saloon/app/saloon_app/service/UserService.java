@@ -19,5 +19,5 @@ public interface UserService {
 
     UserDto updateUser(Long id, AddUserRequestDto addUserRequestDto);
 
-    UserDto updatePartialUser(Long id, Map<String, Objects> updates);
+    UserDto updatePartialUser(Long id, Map<String, Object> updates);
 }

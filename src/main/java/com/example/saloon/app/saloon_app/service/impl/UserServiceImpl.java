@@ -62,10 +62,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updatePartialUser(Long id, Map<String, Objects> updates) {
+    public UserDto updatePartialUser(Long id, Map<String, Object> updates) {
         Users user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found with Id: "+ id));
+        updates.forEach((field, value) ->{
+            switch (field){
+                case "name": user.setName(value.toString());
+                break;
+                case "email": user.setEmail(value.toString());
+                break;
+                default:
+                    throw new IllegalArgumentException("Feald is not supported");
+            }
+        });
 
-        return null;
+        Users saveUser = userRepository.save(user);
+        return modelMapper.map(saveUser, UserDto.class);
+
     }
 }

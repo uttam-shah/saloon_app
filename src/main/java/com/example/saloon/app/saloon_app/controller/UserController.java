@@ -5,6 +5,7 @@ import com.example.saloon.app.saloon_app.dto.UserDto;
 import com.example.saloon.app.saloon_app.entity.Users;
 import com.example.saloon.app.saloon_app.repository.UserRepository;
 import com.example.saloon.app.saloon_app.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> createNewUser(@RequestBody AddUserRequestDto addUserRequestDto){
+    public ResponseEntity<UserDto> createNewUser(@RequestBody @Valid AddUserRequestDto addUserRequestDto){
+        System.out.println("create User");
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.createNewStudent(addUserRequestDto));
 
     }
@@ -57,8 +59,15 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, addUserRequestDto ));
     }
 
-    @PatchMapping("{id}")
-    public ResponseEntity<UserDto> updatePartialUser(@PathVariable Long id, @RequestBody Map<String, Objects> updates ){
+    @PatchMapping("/{id}")
+    public ResponseEntity<UserDto> updatePartialUser(@PathVariable Long id, @RequestBody Map<String, Object> updates ){
+        System.out.println("path mapping");
         return ResponseEntity.ok(userService.updatePartialUser(id, updates));
     }
+
+//    @PatchMapping("/{id}")
+//    public ResponseEntity<UserDto> updatePartialUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+//        System.out.println("path mapping");
+//        return ResponseEntity.ok(userService.updatePartialUser(id, updates));
+//    }
 }

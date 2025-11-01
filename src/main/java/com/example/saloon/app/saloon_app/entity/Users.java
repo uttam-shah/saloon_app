@@ -21,10 +21,10 @@ public class Users {
     private Long userId;
 
     @Column(name = "name", length = 100, nullable = false)
-    private String name;
+    public String name;
 
     @Column(name = "email", length = 150, nullable = false, unique = true)
-    private String email;
+    public String email;
 
     @Column(name = "phone", length = 20, unique = true)
     private String phone;
