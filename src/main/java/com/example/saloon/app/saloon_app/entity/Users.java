@@ -17,8 +17,8 @@ public class Users {
 
     @Id
     @Column(name = "user_id", length = 36, nullable = false, updatable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String userId;
 
     @Column(name = "name", length = 100, nullable = false)
     public String name;
@@ -29,8 +29,8 @@ public class Users {
     @Column(name = "phone", length = 20, unique = true)
     private String phone;
 
-    @Column(name = "password_hash", length = 256, nullable = false)
-    private String passwordHash;
+    @Column(name = "password", length = 256, nullable = false)
+    private String password;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
