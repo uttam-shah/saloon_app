@@ -13,6 +13,7 @@ public class RegisterUserDto {
     private String phone;
 
     private String Dob;
+
     private String email;
 
     @NotBlank(message = "Password is Required")
