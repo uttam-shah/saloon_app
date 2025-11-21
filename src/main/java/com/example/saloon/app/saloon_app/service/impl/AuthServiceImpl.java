@@ -1,11 +1,10 @@
 package com.example.saloon.app.saloon_app.service.impl;
 
-import com.example.saloon.app.saloon_app.dto.LoginUserDto;
-import com.example.saloon.app.saloon_app.dto.RegisterUserDto;
-import com.example.saloon.app.saloon_app.dto.StatusDto;
-import com.example.saloon.app.saloon_app.dto.UserDto;
+import com.example.saloon.app.saloon_app.dto.*;
+import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.Users;
 import com.example.saloon.app.saloon_app.repository.AuthRepository;
+import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
 import com.example.saloon.app.saloon_app.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
     private final AuthRepository authRepository;
+    private final SalonShopRepository salonShopRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -26,6 +26,16 @@ public class AuthServiceImpl implements AuthService {
         Users user = authRepository.save(newUser);
         
         return modelMapper.map(user, UserDto.class);
+    }
+
+    @Override
+    public RegisterShopDto registerShop(RegisterShopDto registerShopDto) {
+        SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
+        Users user = authRepository.findById(registerShopDto.getOwnerId()).orElseThrow(() -> new RuntimeException("User not found"));;
+        newShop.setOwner(user);
+        SalonShop salonShop = salonShopRepository.save(newShop);
+
+        return  modelMapper.map(salonShop, RegisterShopDto.class);
     }
 
     @Override

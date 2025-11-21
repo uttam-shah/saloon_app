@@ -1,11 +1,10 @@
 package com.example.saloon.app.saloon_app.controller;
 
-import com.example.saloon.app.saloon_app.dto.LoginUserDto;
-import com.example.saloon.app.saloon_app.dto.RegisterUserDto;
-import com.example.saloon.app.saloon_app.dto.StatusDto;
-import com.example.saloon.app.saloon_app.dto.UserDto;
+import com.example.saloon.app.saloon_app.dto.*;
+import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
 import com.example.saloon.app.saloon_app.service.AuthService;
 import jakarta.validation.Valid;
+import jdk.jshell.Snippet;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,11 +27,18 @@ public class AuthController {
                .body(authService.registerUser(registerUserDto));
    }
 
-   @GetMapping("/login_user")
-    private ResponseEntity<StatusDto> loginUser(@RequestBody @Valid LoginUserDto loginUserDto){
+   @PostMapping("/login_user")
+   private ResponseEntity<StatusDto> loginUser(@RequestBody @Valid LoginUserDto loginUserDto){
        System.out.println("/login_user");
        return ResponseEntity
                .status(HttpStatus.OK)
                .body(authService.loginUser(loginUserDto));
+   }
+
+   @PostMapping("/register_shop")
+    private ResponseEntity<RegisterShopDto> registerShop(@RequestBody @Valid RegisterShopDto registerShopDto){
+       return ResponseEntity
+               .status(HttpStatus.OK)
+               .body(authService.registerShop(registerShopDto));
    }
 }
