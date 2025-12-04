@@ -28,15 +28,15 @@ public class AuthServiceImpl implements AuthService {
         return modelMapper.map(user, UserDto.class);
     }
 
-    @Override
-    public RegisterShopDto registerShop(RegisterShopDto registerShopDto) {
-        SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
-        Users user = authRepository.findById(registerShopDto.getOwnerId()).orElseThrow(() -> new RuntimeException("User not found"));;
-        newShop.setOwner(user);
-        SalonShop salonShop = salonShopRepository.save(newShop);
-
-        return  modelMapper.map(salonShop, RegisterShopDto.class);
-    }
+//    @Override
+//    public RegisterShopDto registerShop(RegisterShopDto registerShopDto) {
+//        SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
+//        Users user = authRepository.findById(registerShopDto.getOwnerId()).orElseThrow(() -> new RuntimeException("User not found"));;
+//        newShop.setOwner(user);
+//        SalonShop salonShop = salonShopRepository.save(newShop);
+//
+//        return  modelMapper.map(salonShop, RegisterShopDto.class);
+//    }
 
     @Override
     public StatusDto loginUser(LoginUserDto loginUserDto) {

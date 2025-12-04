@@ -35,10 +35,10 @@ public class AuthController {
                .body(authService.loginUser(loginUserDto));
    }
 
-   @PostMapping("/register_shop")
-    private ResponseEntity<RegisterShopDto> registerShop(@RequestBody @Valid RegisterShopDto registerShopDto){
-       return ResponseEntity
-               .status(HttpStatus.OK)
-               .body(authService.registerShop(registerShopDto));
-   }
+//   @PostMapping("/register_shop")
+//    private ResponseEntity<RegisterShopDto> registerShop(@RequestBody @Valid RegisterShopDto registerShopDto){
+//       return ResponseEntity
+//               .status(HttpStatus.OK)
+//               .body(authService.registerShop(registerShopDto));
+//   }
 }

@@ -9,5 +9,5 @@ public interface AuthService {
 
     UserDto registerUser(RegisterUserDto registerUserDto);
 
-    RegisterShopDto registerShop(@Valid RegisterShopDto registerShopDto);
+//    RegisterShopDto registerShop(@Valid RegisterShopDto registerShopDto);
 }
