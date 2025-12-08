@@ -19,8 +19,9 @@ import java.util.UUID;
 public class SalonShop {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "shop_id", length = 36, nullable = false, updatable = false)
-    private String shopId = UUID.randomUUID().toString();
+    private String shopId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)

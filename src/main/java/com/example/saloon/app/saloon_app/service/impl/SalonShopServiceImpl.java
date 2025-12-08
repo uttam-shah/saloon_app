@@ -18,13 +18,33 @@ public class SalonShopServiceImpl implements SalonShopService {
     private final ModelMapper modelMapper;
     private final AuthRepository authRepository;
 
-    @Override
+//    @Override
+//    public RegisterShopDto RegisterShop(RegisterShopDto registerShopDto) {
+//        SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
+//
+//        Users user = authRepository.findById(registerShopDto.getOwnerId()).orElseThrow(() -> new RuntimeException("User not found"));
+//        newShop.setOwner(user);
+//        SalonShop salonShop = salonShopRepository.save(newShop);
+//
+//        return  modelMapper.map(salonShop, RegisterShopDto.class);
+//    }
+
     public RegisterShopDto RegisterShop(RegisterShopDto registerShopDto) {
         SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
-        Users user = authRepository.findById(registerShopDto.getOwnerId()).orElseThrow(() -> new RuntimeException("User not found"));;
+
+        // Force shopId to null to ensure INSERT operation
+        newShop.setShopId(null);
+
+        // Also ensure timestamps are not set
+        newShop.setCreatedAt(null);
+        newShop.setUpdatedAt(null);
+
+        Users user = authRepository.findById(registerShopDto.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
         newShop.setOwner(user);
+
         SalonShop salonShop = salonShopRepository.save(newShop);
 
-        return  modelMapper.map(salonShop, RegisterShopDto.class);
+        return modelMapper.map(salonShop, RegisterShopDto.class);
     }
 }
