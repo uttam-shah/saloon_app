@@ -1,16 +1,11 @@
-package com.example.saloon.app.saloon_app.dto.registerShop;
+package com.example.saloon.app.saloon_app.dto.saloonShop;
 
-import com.example.saloon.app.saloon_app.entity.Users;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.List;
 
 @Data
 public class RegisterShopDto {
@@ -20,6 +15,22 @@ public class RegisterShopDto {
 
     @NotBlank(message = "Shop Name is Required")
     private String shopName;
+
+    private String shopDescription;
+
+    private String phone;
+
+    private boolean isActive = false;
+
+    private int serviceCount = 0;
+
+    private  int appointmentsToday = 0;
+
+    private int todayEarnings = 0;
+
+    private String coverImage;
+
+    private List<String> photos;
 
     private String address1;
 

@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -29,6 +30,30 @@ public class SalonShop {
 
     @Column(name = "shop_name", length = 150, nullable = false)
     private String shopName;
+
+    @Column(name = "shop_description", length = 350, nullable = false)
+    private String shopDescription;
+
+    @Column(name = "phone", length = 50, nullable = true)
+    private String phone;
+
+    @Column(name = "is_active")
+    private boolean isActive = false;
+
+    @Column(name = "service_count")
+    private int serviceCount = 0;
+
+    @Column(name = "appointments_today")
+    private  int appointmentsToday = 0;
+
+    @Column(name = "today_earnings")
+    private int todayEarnings = 0;
+
+    @Column(name = "cover_image")
+    private String coverImage;
+
+    @Column(name = "photos")
+    private List<String> photos;
 
     @Column(name = "address1", length = 255, nullable = false)
     private String address1;
