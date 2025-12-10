@@ -38,7 +38,7 @@ public class SalonShop {
     private String phone;
 
     @Column(name = "is_active")
-    private boolean isActive = false;
+    private boolean isActive = true;
 
     @Column(name = "service_count")
     private int serviceCount = 0;

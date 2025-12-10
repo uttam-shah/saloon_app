@@ -73,6 +73,7 @@ public class AuthServiceImpl implements AuthService {
         // --- 4. Success ---
         statusDto.setSuccess(true);
         statusDto.setMessage("Login success");
+        statusDto.setData(modelMapper.map(newUser, UserDto.class));
         return statusDto;
     }
 
