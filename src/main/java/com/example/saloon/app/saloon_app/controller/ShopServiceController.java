@@ -14,23 +14,38 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("shop_service")
+@RequestMapping("/shop-services")
 public class ShopServiceController {
     private final ShopServiceService shopServiceService;
 
-    @PostMapping("/register")
-    private ResponseEntity<ShopServiceResponseDto> registerService(@RequestBody @Valid ShopServiceDto shopServiceDto){
-        System.out.println("shop_service/register");
+    //Register Service
+    @PostMapping
+    public ResponseEntity<ShopServiceResponseDto> registerService(
+            @RequestBody @Valid ShopServiceDto shopServiceDto){
+        System.out.println("POST /shop-services");
         return  ResponseEntity
                 .status(HttpStatus.OK)
                 .body(shopServiceService.registerService(shopServiceDto));
     }
 
-    @GetMapping("/get_services_by_user_id/{userId}")
-    private ResponseEntity<List<ShopServiceResponseDto>>getServices(@PathVariable String userId ){
-        System.out.println("shop_services/get_services_by_user_id/"+userId);
+    // GET SERVICES BY USER ID (RESTFUL)
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<List<ShopServiceResponseDto>> getServicesByUserId(
+            @PathVariable String userId ){
+        System.out.println("GET /shop-services/users/" + userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(shopServiceService.getShopsByUserId(userId));
+                .body(shopServiceService.getServicesByUserId(userId));
     }
+
+    // GET SERVICES BY SHOP ID
+    @GetMapping("/shop/{shopId}")
+    public ResponseEntity<List<ShopServiceResponseDto>> getServicesByShopId(
+            @PathVariable String shopId){
+        System.out.println("GET /shop-services/shop/" + shopId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(shopServiceService.getServicesByShopId(shopId));
+    }
+
 }

@@ -16,6 +16,7 @@ public class RegisterShopDto {
     @NotBlank(message = "Shop Name is Required")
     private String shopName;
 
+    @NotBlank(message = "Shop Description is required")
     private String shopDescription;
 
     private String phone;

@@ -50,13 +50,24 @@ public class ShopServiceServiceImpl implements ShopServiceService {
     }
 
     @Override
-    public List<ShopServiceResponseDto> getShopsByUserId(String userId) {
+    public List<ShopServiceResponseDto> getServicesByUserId(String userId) {
         Users users = authRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("user not found"));
         List<ShopService> services = shopServiceRepository.findByShop_Owner_UserId(userId);
 
-//        return Collections.singletonList(modelMapper.map(salonShops, ShopServiceResponseDto.class));
         // Convert List<ShopService> → List<ShopServiceResponseDto>
+        return services.stream()
+                .map(service -> modelMapper.map(service, ShopServiceResponseDto.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ShopServiceResponseDto> getServicesByShopId(String shopId) {
+        SalonShop salonShop = salonShopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Shop Id not found"));
+
+        List<ShopService> services = shopServiceRepository.findByShop_ShopId(shopId);
+
         return services.stream()
                 .map(service -> modelMapper.map(service, ShopServiceResponseDto.class))
                 .collect(Collectors.toList());
