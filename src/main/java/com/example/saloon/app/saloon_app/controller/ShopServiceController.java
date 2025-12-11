@@ -8,10 +8,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,5 +24,13 @@ public class ShopServiceController {
         return  ResponseEntity
                 .status(HttpStatus.OK)
                 .body(shopServiceService.registerService(shopServiceDto));
+    }
+
+    @GetMapping("/get_services_by_user_id/{userId}")
+    private ResponseEntity<List<ShopServiceResponseDto>>getServices(@PathVariable String userId ){
+        System.out.println("shop_services/get_services_by_user_id/"+userId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(shopServiceService.getShopsByUserId(userId));
     }
 }

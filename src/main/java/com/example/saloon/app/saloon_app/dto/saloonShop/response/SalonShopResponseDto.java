@@ -30,7 +30,6 @@ public class SalonShopResponseDto {
     private String country;
     private BigDecimal latitude;
     private BigDecimal longitude;
-
     private OwnerDto owner;
 }
 

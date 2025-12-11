@@ -12,5 +12,4 @@ public interface SalonShopRepository extends JpaRepository<SalonShop, String> {
 
     List<SalonShop> findByOwner_UserId(String userId);
 
-    SalonShop findByShopId(String shopId);
 }
