@@ -1,6 +1,7 @@
 package com.example.saloon.app.saloon_app.service;
 
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceDto;
+import com.example.saloon.app.saloon_app.dto.ShopService.ShopServicePatchDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import jakarta.validation.Valid;
 
@@ -12,4 +13,8 @@ public interface ShopServiceService {
     List<ShopServiceResponseDto> getServicesByUserId(String userId);
 
     List<ShopServiceResponseDto> getServicesByShopId(String shopId);
+
+    ShopServiceResponseDto updateService(String serviceId, @Valid ShopServiceDto shopServiceDto);
+
+    ShopServiceResponseDto patchService(String serviceId, ShopServicePatchDto patchDto);
 }

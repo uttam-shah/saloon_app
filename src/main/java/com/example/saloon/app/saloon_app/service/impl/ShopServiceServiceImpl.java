@@ -1,6 +1,7 @@
 package com.example.saloon.app.saloon_app.service.impl;
 
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceDto;
+import com.example.saloon.app.saloon_app.dto.ShopService.ShopServicePatchDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
@@ -71,6 +72,43 @@ public class ShopServiceServiceImpl implements ShopServiceService {
         return services.stream()
                 .map(service -> modelMapper.map(service, ShopServiceResponseDto.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ShopServiceResponseDto updateService(String serviceId, ShopServiceDto dto) {
+        ShopService service = shopServiceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Service not found"));
+
+        // Replace all fields
+        service.setName(dto.getName());
+        service.setDescription(dto.getDescription());
+        service.setDurationMinutes(dto.getDurationMinutes());
+        service.setPrice(dto.getPrice());
+        service.setIsActive(dto.getIsActive());
+
+        // Update shop if required
+        SalonShop shop = salonShopRepository.findById(dto.getShopId())
+                .orElseThrow(() -> new RuntimeException("Shop not found"));
+        service.setShop(shop);
+
+        ShopService saved = shopServiceRepository.save(service);
+        return modelMapper.map(saved, ShopServiceResponseDto.class);
+
+    }
+
+    @Override
+    public ShopServiceResponseDto patchService(String serviceId, ShopServicePatchDto dto) {
+        ShopService service = shopServiceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Service not found"));
+
+        if (dto.getName() != null) service.setName(dto.getName());
+        if (dto.getDescription() != null) service.setDescription(dto.getDescription());
+        if (dto.getDurationMinutes() != null) service.setDurationMinutes(dto.getDurationMinutes());
+        if (dto.getPrice() != null) service.setPrice(dto.getPrice());
+        if (dto.getIsActive() != null) service.setIsActive(dto.getIsActive());
+
+        ShopService saved = shopServiceRepository.save(service);
+        return modelMapper.map(saved, ShopServiceResponseDto.class);
     }
 
 }

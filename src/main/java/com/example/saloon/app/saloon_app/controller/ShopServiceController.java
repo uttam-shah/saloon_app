@@ -2,6 +2,7 @@ package com.example.saloon.app.saloon_app.controller;
 
 
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceDto;
+import com.example.saloon.app.saloon_app.dto.ShopService.ShopServicePatchDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import com.example.saloon.app.saloon_app.service.ShopServiceService;
 import jakarta.validation.Valid;
@@ -47,5 +48,29 @@ public class ShopServiceController {
                 .status(HttpStatus.OK)
                 .body(shopServiceService.getServicesByShopId(shopId));
     }
+
+    // put Mapping for full update
+    @PutMapping("/{serviceId}")
+    public ResponseEntity<ShopServiceResponseDto> updateService(
+            @PathVariable String serviceId,
+            @Valid @RequestBody ShopServiceDto shopServiceDto) {
+
+        return ResponseEntity.ok(
+                shopServiceService.updateService(serviceId, shopServiceDto)
+        );
+    }
+
+    // Patch Mapping for partial update
+    @PatchMapping("/{serviceId}")
+    public ResponseEntity<ShopServiceResponseDto> patchService(
+            @PathVariable String serviceId,
+            @RequestBody ShopServicePatchDto patchDto) {
+
+        return ResponseEntity.ok(
+                shopServiceService.patchService(serviceId, patchDto)
+        );
+    }
+
+
 
 }
