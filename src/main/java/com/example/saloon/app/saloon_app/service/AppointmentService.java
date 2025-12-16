@@ -1,9 +1,13 @@
 package com.example.saloon.app.saloon_app.service;
 
 import com.example.saloon.app.saloon_app.dto.Appointment.CreateAppointmentDto;
-import com.example.saloon.app.saloon_app.dto.Appointment.CreateAppointmentResponseDto;
+import com.example.saloon.app.saloon_app.dto.Appointment.appointmentResponseDto;
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 public interface AppointmentService {
-    CreateAppointmentResponseDto createAppointment(@Valid CreateAppointmentDto dto);
+    appointmentResponseDto createAppointment(@Valid CreateAppointmentDto dto);
+
+    List<appointmentResponseDto> getAppointments(String userId);
 }

@@ -1,7 +1,7 @@
 package com.example.saloon.app.saloon_app.service.impl;
 
 import com.example.saloon.app.saloon_app.dto.Appointment.CreateAppointmentDto;
-import com.example.saloon.app.saloon_app.dto.Appointment.CreateAppointmentResponseDto;
+import com.example.saloon.app.saloon_app.dto.Appointment.appointmentResponseDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import com.example.saloon.app.saloon_app.dto.UserDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,7 +61,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 //
 //    }
 
-    public CreateAppointmentResponseDto createAppointment(CreateAppointmentDto dto) {
+    public appointmentResponseDto createAppointment(CreateAppointmentDto dto) {
 
         Appointment appointment = new Appointment();
 
@@ -80,13 +81,30 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment saved = appointmentRepository.save(appointment);
 
-        CreateAppointmentResponseDto response = new CreateAppointmentResponseDto();
+        appointmentResponseDto response = new appointmentResponseDto();
         response.setAppointmentId(saved.getAppointmentId());
         response.setAppointmentTime(saved.getAppointmentTime());
+        response.setStatus(saved.getStatus());
+        response.setCreatedAt(saved.getCreatedAt());
+        response.setUpdatedAt(saved.getUpdatedAt());
         response.setUser(modelMapper.map(user, UserDto.class));
         response.setShop(modelMapper.map(shop, SalonShopResponseDto.class));
         response.setService(modelMapper.map(service, ShopServiceResponseDto.class));
 
         return response;
+    }
+
+    @Override
+    public List<appointmentResponseDto> getAppointments(String userId) {
+        Users user = authRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("userId not found"));
+
+        List<Appointment> appointmentList = appointmentRepository.findByUser_UserId(userId);
+
+//        return modelMapper.map(appointmentList, CreateAppointmentResponseDto.class);
+
+        return appointmentList.stream()
+                .map(appointment -> modelMapper.map(appointment, appointmentResponseDto.class))
+                .collect(Collectors.toList());
     }
 }
