@@ -2,6 +2,7 @@ package com.example.saloon.app.saloon_app.controller;
 
 
 import com.example.saloon.app.saloon_app.dto.Appointment.CreateAppointmentDto;
+import com.example.saloon.app.saloon_app.dto.Appointment.PatchAppointmentDto;
 import com.example.saloon.app.saloon_app.dto.Appointment.appointmentResponseDto;
 import com.example.saloon.app.saloon_app.service.AppointmentService;
 import jakarta.validation.Valid;
@@ -35,5 +36,15 @@ public class AppointmentController {
                 .status(HttpStatus.OK)
                 .body(appointmentService.getAppointments(userId));
     }
+
+    @PatchMapping("/{appointmentId}")
+    public ResponseEntity<appointmentResponseDto> patchAppointment(
+            @PathVariable String appointmentId,
+            @RequestBody PatchAppointmentDto dto){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(appointmentService.patchAppointment(dto, appointmentId));
+    }
+
 
 }

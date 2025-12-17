@@ -1,6 +1,7 @@
 package com.example.saloon.app.saloon_app.service.impl;
 
 import com.example.saloon.app.saloon_app.dto.Appointment.CreateAppointmentDto;
+import com.example.saloon.app.saloon_app.dto.Appointment.PatchAppointmentDto;
 import com.example.saloon.app.saloon_app.dto.Appointment.appointmentResponseDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import com.example.saloon.app.saloon_app.dto.UserDto;
@@ -106,5 +107,21 @@ public class AppointmentServiceImpl implements AppointmentService {
         return appointmentList.stream()
                 .map(appointment -> modelMapper.map(appointment, appointmentResponseDto.class))
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public appointmentResponseDto patchAppointment(PatchAppointmentDto dto, String appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("appointmentId not found"));
+
+        if(dto.getStatus() != null) appointment.setStatus(dto.getStatus());
+        if(dto.getAppointmentTime() != null) appointment.setAppointmentTime(dto.getAppointmentTime());
+
+        Appointment saved = appointmentRepository.save(appointment);
+
+        return modelMapper.map(saved, appointmentResponseDto.class);
+
+
     }
 }
