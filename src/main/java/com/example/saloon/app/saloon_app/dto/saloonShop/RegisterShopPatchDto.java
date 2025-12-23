@@ -3,6 +3,7 @@ package com.example.saloon.app.saloon_app.dto.saloonShop;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -17,9 +18,6 @@ public class RegisterShopPatchDto {
     private Integer serviceCount;          // INTEGER → must be nullable
     private Integer appointmentsToday;     // INTEGER → must be nullable
     private Integer todayEarnings;         // INTEGER → must be nullable
-
-    private String coverImage;
-    private List<String> photos;
 
     private String address1;
     private String address2;
