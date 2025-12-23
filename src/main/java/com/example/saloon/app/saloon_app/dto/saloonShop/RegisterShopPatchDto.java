@@ -2,6 +2,7 @@ package com.example.saloon.app.saloon_app.dto.saloonShop;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;

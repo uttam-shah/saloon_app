@@ -1,5 +1,6 @@
 package com.example.saloon.app.saloon_app.controller;
 
+import com.cloudinary.Cloudinary;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
@@ -7,7 +8,9 @@ import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.service.SalonShopService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +23,8 @@ import java.util.List;
 public class ShopController {
 
     private  final SalonShopService salonShopService;
+    @Autowired
+    private Cloudinary cloudinary;
 
     // Register Shop
     @PostMapping()
@@ -50,10 +55,10 @@ public class ShopController {
     }
 
     //Patch for partial update
-    @PatchMapping("/{shopId}")
+    @PatchMapping(value = "/{shopId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SalonShopResponseDto> patchShop(
             @PathVariable String shopId,
-            @RequestBody RegisterShopPatchDto dto){
+            @ModelAttribute RegisterShopPatchDto dto){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(salonShopService.patchShop(shopId, dto));

@@ -1,5 +1,7 @@
 package com.example.saloon.app.saloon_app.service.impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
@@ -11,10 +13,14 @@ import com.example.saloon.app.saloon_app.service.SalonShopService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +29,9 @@ public class SalonShopServiceImpl implements SalonShopService {
     private final SalonShopRepository salonShopRepository;
     private final AuthRepository authRepository;
     private final ModelMapper modelMapper;
+
+    @Autowired
+    private Cloudinary cloudinary;
 
     public SalonShopResponseDto RegisterShop(RegisterShopDto registerShopDto) {
         SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
@@ -88,39 +97,69 @@ public class SalonShopServiceImpl implements SalonShopService {
     @Override
     public SalonShopResponseDto patchShop(String shopId, RegisterShopPatchDto dto) {
 
-        SalonShop shop = salonShopRepository.findById(shopId)
-                .orElseThrow(() -> new RuntimeException("Shop not found"));
+        try {
 
-        if (dto.getOwnerId() != null) {
-            Users owner = authRepository.findById(dto.getOwnerId())
-                    .orElseThrow(() -> new RuntimeException("Owner not found"));
-            shop.setOwner(owner);
+            SalonShop shop = salonShopRepository.findById(shopId)
+                    .orElseThrow(() -> new RuntimeException("Shop not found"));
+
+            if (dto.getOwnerId() != null) {
+                Users owner = authRepository.findById(dto.getOwnerId())
+                        .orElseThrow(() -> new RuntimeException("Owner not found"));
+                shop.setOwner(owner);
+            }
+
+            if (dto.getShopName() != null) shop.setShopName(dto.getShopName());
+            if (dto.getShopDescription() != null) shop.setShopDescription(dto.getShopDescription());
+            if (dto.getPhone() != null) shop.setPhone(dto.getPhone());
+            if (dto.getIsActive() != null) shop.setActive(dto.getIsActive());
+            if (dto.getServiceCount() != null) shop.setServiceCount(dto.getServiceCount());
+            if (dto.getAppointmentsToday() != null) shop.setAppointmentsToday(dto.getAppointmentsToday());
+            if (dto.getTodayEarnings() != null) shop.setTodayEarnings(dto.getTodayEarnings());
+            if (dto.getCoverImage() != null) shop.setCoverImage(dto.getCoverImage());
+            if (dto.getPhotos() != null) shop.setPhotos(dto.getPhotos());
+
+            if (dto.getAddress1() != null) shop.setAddress1(dto.getAddress1());
+            if (dto.getAddress2() != null) shop.setAddress2(dto.getAddress2());
+            if (dto.getCity() != null) shop.setCity(dto.getCity());
+            if (dto.getState() != null) shop.setState(dto.getState());
+            if (dto.getPostalCode() != null) shop.setPostalCode(dto.getPostalCode());
+            if (dto.getCountry() != null) shop.setCountry(dto.getCountry());
+
+            if (dto.getLatitude() != null) shop.setLatitude(dto.getLatitude());
+            if (dto.getLongitude() != null) shop.setLongitude(dto.getLongitude());
+
+            if (dto.getCoverImage() != null) {
+                Map uploadResult = cloudinary.uploader()
+                        .upload(dto.getCoverImage()
+                                .getBytes(), ObjectUtils.asMap("folder", "salon/baneer"));
+
+                String fileUrl = uploadResult.get("secure_url").toString();
+                shop.setCoverImage(fileUrl);
+            }
+
+            if (dto.getPhotos() != null && !dto.getPhotos().isEmpty()) {
+                var images = dto.getPhotos();
+                List<String> imageUrls = new LinkedList<>();
+                for (int i = 0; i < images.size(); i++) {
+                    Map uploadResult = cloudinary.uploader()
+                            .upload(dto.getPhotos().get(i).getBytes(), ObjectUtils.asMap("folder", "salon/baneer"));
+
+                    String fileUrl = uploadResult.get("secure_url").toString();
+                    imageUrls.add(fileUrl);
+                }
+                shop.setPhotos(imageUrls);
+            }
+
+            // Save updated shop
+            SalonShop updated = salonShopRepository.save(shop);
+            return modelMapper.map(updated, SalonShopResponseDto.class);
+        }
+        catch (IOException e){
+            throw  new RuntimeException("Failed to upload Image: ",e);
         }
 
-        if (dto.getShopName() != null) shop.setShopName(dto.getShopName());
-        if (dto.getShopDescription() != null) shop.setShopDescription(dto.getShopDescription());
-        if (dto.getPhone() != null) shop.setPhone(dto.getPhone());
-        if (dto.getIsActive() != null) shop.setActive(dto.getIsActive());
-        if (dto.getServiceCount() != null) shop.setServiceCount(dto.getServiceCount());
-        if (dto.getAppointmentsToday() != null) shop.setAppointmentsToday(dto.getAppointmentsToday());
-        if (dto.getTodayEarnings() != null) shop.setTodayEarnings(dto.getTodayEarnings());
-        if (dto.getCoverImage() != null) shop.setCoverImage(dto.getCoverImage());
-        if (dto.getPhotos() != null) shop.setPhotos(dto.getPhotos());
 
-        if (dto.getAddress1() != null) shop.setAddress1(dto.getAddress1());
-        if (dto.getAddress2() != null) shop.setAddress2(dto.getAddress2());
-        if (dto.getCity() != null) shop.setCity(dto.getCity());
-        if (dto.getState() != null) shop.setState(dto.getState());
-        if (dto.getPostalCode() != null) shop.setPostalCode(dto.getPostalCode());
-        if (dto.getCountry() != null) shop.setCountry(dto.getCountry());
 
-        if (dto.getLatitude() != null) shop.setLatitude(dto.getLatitude());
-        if (dto.getLongitude() != null) shop.setLongitude(dto.getLongitude());
-
-        // Save updated shop
-        SalonShop updated = salonShopRepository.save(shop);
-
-        return modelMapper.map(updated, SalonShopResponseDto.class);
     }
 
 }
