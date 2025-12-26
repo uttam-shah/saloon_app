@@ -29,11 +29,15 @@ public class ShopController {
 
     // Register Shop
     @PostMapping()
-    public ResponseEntity<SalonShopResponseDto> registerShop(@RequestBody @Valid RegisterShopDto registerShopDto){
+    public ResponseEntity<SalonShopResponseDto> registerShop(
+            @RequestBody @Valid RegisterShopDto registerShopDto,
+            @RequestParam("coverImage") MultipartFile coverImage,
+            @RequestParam("photos") List<MultipartFile> photos
+    ){
         System.out.println("POST shop");
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(salonShopService.RegisterShop(registerShopDto));
+                .body(salonShopService.RegisterShop(registerShopDto, coverImage, photos));
     }
 
     // Get Shops by UserId
@@ -59,27 +63,28 @@ public class ShopController {
     @PatchMapping(value = "/{shopId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SalonShopResponseDto> patchShop(
             @PathVariable String shopId,
-            @ModelAttribute RegisterShopPatchDto dto){
+            @ModelAttribute RegisterShopPatchDto dto,
+            @RequestParam("coverImage") MultipartFile coverImage,
+            @RequestParam("photos") List<MultipartFile> photos
+    ){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(salonShopService.patchShop(shopId, dto));
+                .body(salonShopService.patchShop(shopId, dto, coverImage, photos ));
     }
 
     @PostMapping("/{shopId}/cover-image")
     public ResponseEntity<String> uploadCoverImage(
-            @PathVariable String shopId,
             @RequestParam("coverImage") MultipartFile file) {
 
-        String url = salonShopService.uploadCoverImage(shopId, file);
+        String url = salonShopService.uploadCoverImage(file);
         return ResponseEntity.ok(url);
     }
 
     @PostMapping("/{shopId}/photos")
     public ResponseEntity<List<String>> uploadShopPhotos(
-            @PathVariable String shopId,
             @RequestParam("photos") List<MultipartFile> files) {
 
-        List<String> urls = salonShopService.uploadShopPhotos(shopId, files);
+        List<String> urls = salonShopService.uploadShopPhotos(files);
         return ResponseEntity.ok(urls);
     }
 

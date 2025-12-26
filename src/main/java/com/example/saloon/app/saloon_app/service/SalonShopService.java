@@ -10,15 +10,15 @@ import java.util.List;
 
 public interface SalonShopService {
 
-    SalonShopResponseDto RegisterShop(RegisterShopDto registerShopDto);
+    SalonShopResponseDto RegisterShop(RegisterShopDto registerShopDto, MultipartFile coverImage, List<MultipartFile> photos);
 
     List<SalonShopResponseDto> getShops(String userId);
 
     SalonShopResponseDto updateShop(String shopId, RegisterShopDto registerShopDto);
 
-    SalonShopResponseDto patchShop(String shopId, RegisterShopPatchDto dto);
+    SalonShopResponseDto patchShop(String shopId, RegisterShopPatchDto dto, MultipartFile coverImage, List<MultipartFile> photos);
 
-    String uploadCoverImage(String shopId, MultipartFile file);
+    String uploadCoverImage(MultipartFile file);
 
-    List<String> uploadShopPhotos(String shopId, List<MultipartFile> files);
+    List<String> uploadShopPhotos(List<MultipartFile> files);
 }

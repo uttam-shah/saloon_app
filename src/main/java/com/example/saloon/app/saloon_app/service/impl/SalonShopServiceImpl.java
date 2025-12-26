@@ -10,6 +10,7 @@ import com.example.saloon.app.saloon_app.entity.Users;
 import com.example.saloon.app.saloon_app.repository.AuthRepository;
 import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
 import com.example.saloon.app.saloon_app.service.SalonShopService;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.IIOException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +36,11 @@ public class SalonShopServiceImpl implements SalonShopService {
     @Autowired
     private Cloudinary cloudinary;
 
-    public SalonShopResponseDto RegisterShop(RegisterShopDto registerShopDto) {
+    public SalonShopResponseDto RegisterShop(
+            RegisterShopDto registerShopDto,
+            MultipartFile coverImage,
+            List<MultipartFile> photos
+            ) {
         SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
 
         // Force shopId to null to ensure INSERT operation
@@ -46,7 +52,29 @@ public class SalonShopServiceImpl implements SalonShopService {
 
         Users user = authRepository.findById(registerShopDto.getOwnerId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        String coverUrl = "";
+        List<String> photosUrls = new LinkedList<>();
+        if(!coverImage.isEmpty()){
+            try {
+                coverUrl = uploadImage(coverImage);
+            }
+            catch (Exception e){
+                System.out.println("Error While Uploading Image: "+e);
+            }
+        }
+        if(!photos.isEmpty()){
+            for(MultipartFile file : photos){
+                try {
+                    photosUrls.add(uploadImage(file));
+                }
+                catch (Exception e){
+                    System.out.println("Error while uploading Image: "+e);
+                }
+            }
+        }
         newShop.setOwner(user);
+        newShop.setCoverImage(coverUrl);
+        newShop.setPhotos(photosUrls);
 
         SalonShop salonShop = salonShopRepository.save(newShop);
 
@@ -59,7 +87,7 @@ public class SalonShopServiceImpl implements SalonShopService {
                 .orElseThrow(() -> new RuntimeException("User not flund"));
         List<SalonShop> salonShops = salonShopRepository.getByOwner(owner);
 
-        List<SalonShopResponseDto> salonShopResponseDto =  new ArrayList<>();
+        List<SalonShopResponseDto> salonShopResponseDto =  new LinkedList<>();
 
         for (int i=0; i < salonShops.size(); i++){
             salonShopResponseDto.add(modelMapper.map(salonShops.get(i), SalonShopResponseDto.class));
@@ -96,7 +124,12 @@ public class SalonShopServiceImpl implements SalonShopService {
 
 
     @Override
-    public SalonShopResponseDto patchShop(String shopId, RegisterShopPatchDto dto) {
+    public SalonShopResponseDto patchShop(
+            String shopId,
+            RegisterShopPatchDto dto,
+            @Nullable MultipartFile coverImage,
+            @Nullable List<MultipartFile> photos
+    ) {
 
         SalonShop shop = salonShopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Shop not found"));
@@ -105,6 +138,28 @@ public class SalonShopServiceImpl implements SalonShopService {
             Users owner = authRepository.findById(dto.getOwnerId())
                     .orElseThrow(() -> new RuntimeException("Owner not found"));
             shop.setOwner(owner);
+        }
+
+        String coverUrl = "";
+        List<String> photosUrl = new LinkedList<>();
+        if(coverImage != null){
+            try {
+                coverUrl = uploadImage(coverImage);
+            }
+            catch (Exception e){
+                System.out.println("Error while uploading image: "+e);
+            }
+
+        }
+        if(photos != null){
+            for(MultipartFile file : photos){
+                try {
+                    photosUrl.add(uploadImage(file));
+                }
+                catch (Exception e){
+                    System.out.println("Error While Uploading Images: "+ e);
+                }
+            }
         }
 
         if (dto.getShopName() != null) shop.setShopName(dto.getShopName());
@@ -122,6 +177,10 @@ public class SalonShopServiceImpl implements SalonShopService {
         if (dto.getPostalCode() != null) shop.setPostalCode(dto.getPostalCode());
         if (dto.getCountry() != null) shop.setCountry(dto.getCountry());
 
+        // setting images
+        if(!coverUrl.isEmpty()) shop.setCoverImage(coverUrl);
+        if(!photosUrl.isEmpty()) shop.setPhotos(photosUrl);
+
         if (dto.getLatitude() != null) shop.setLatitude(dto.getLatitude());
         if (dto.getLongitude() != null) shop.setLongitude(dto.getLongitude());
 
@@ -132,7 +191,8 @@ public class SalonShopServiceImpl implements SalonShopService {
     }
 
     @Override
-    public String uploadCoverImage(String shopId, MultipartFile file) {
+    public String uploadCoverImage(MultipartFile file) {
+
         try {
             return uploadImage(file);
         }
@@ -143,11 +203,25 @@ public class SalonShopServiceImpl implements SalonShopService {
     }
 
     @Override
-    public List<String> uploadShopPhotos(String shopId, List<MultipartFile> files) {
-        return List.of();
+    public List<String> uploadShopPhotos(List<MultipartFile> files) {
+        List<String> links = new LinkedList<>();
+
+        for(MultipartFile file : files){
+            try {
+                links.add(uploadImage(file));
+            }
+            catch (Exception e){
+                System.out.println(e);
+            }
+
+        }
+
+        return  links;
+
     }
 
     String uploadImage(MultipartFile file) throws IOException {
+
 
         Map uploadResult = cloudinary.uploader()
                 .upload(file.getBytes(), ObjectUtils.emptyMap());
