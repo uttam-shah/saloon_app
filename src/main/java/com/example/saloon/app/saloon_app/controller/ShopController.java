@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -63,5 +64,25 @@ public class ShopController {
                 .status(HttpStatus.OK)
                 .body(salonShopService.patchShop(shopId, dto));
     }
+
+    @PostMapping("/{shopId}/cover-image")
+    public ResponseEntity<String> uploadCoverImage(
+            @PathVariable String shopId,
+            @RequestParam("coverImage") MultipartFile file) {
+
+        String url = salonShopService.uploadCoverImage(shopId, file);
+        return ResponseEntity.ok(url);
+    }
+
+    @PostMapping("/{shopId}/photos")
+    public ResponseEntity<List<String>> uploadShopPhotos(
+            @PathVariable String shopId,
+            @RequestParam("photos") List<MultipartFile> files) {
+
+        List<String> urls = salonShopService.uploadShopPhotos(shopId, files);
+        return ResponseEntity.ok(urls);
+    }
+
+
 
 }

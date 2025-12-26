@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -18,9 +19,6 @@ public class RegisterShopPatchDto {
     private Integer serviceCount;          // INTEGER → must be nullable
     private Integer appointmentsToday;     // INTEGER → must be nullable
     private Integer todayEarnings;         // INTEGER → must be nullable
-
-    private String coverImage;
-    private List<String> photos;
 
     private String address1;
     private String address2;
