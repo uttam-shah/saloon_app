@@ -21,7 +21,7 @@ public class SalonShopResponseDto {
     private  int appointmentsToday = 0;
     private int todayEarnings = 0;
     private String coverImage;
-    private List<String> photos;
+    private List<ShopImageDto> photos;
     private String address1;
     private String address2;
     private String city;

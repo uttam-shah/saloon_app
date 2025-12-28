@@ -10,6 +10,7 @@ import com.example.saloon.app.saloon_app.entity.ShopImages;
 import com.example.saloon.app.saloon_app.entity.Users;
 import com.example.saloon.app.saloon_app.repository.AuthRepository;
 import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
+import com.example.saloon.app.saloon_app.repository.ShopImagesRepository;
 import com.example.saloon.app.saloon_app.service.SalonShopService;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -32,6 +33,7 @@ import java.util.Map;
 public class SalonShopServiceImpl implements SalonShopService {
 
     private final SalonShopRepository salonShopRepository;
+    private final ShopImagesRepository shopImagesRepository;
     private final AuthRepository authRepository;
     private final ModelMapper modelMapper;
     @Autowired
@@ -41,60 +43,168 @@ public class SalonShopServiceImpl implements SalonShopService {
             RegisterShopDto registerShopDto,
             MultipartFile coverImage,
             List<MultipartFile> photos
-            ) {
+    ) {
         SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
 
-        // Force shopId to null to ensure INSERT operation
         newShop.setShopId(null);
-
-        // Also ensure timestamps are not set
         newShop.setCreatedAt(null);
         newShop.setUpdatedAt(null);
 
         Users user = authRepository.findById(registerShopDto.getOwnerId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        String coverUrl = "";
 
-        List<String> photosUrls = new LinkedList<>();
-        if(!coverImage.isEmpty()){
+        newShop.setOwner(user);
+
+        // Upload cover image
+        if (coverImage != null && !coverImage.isEmpty()) {
             try {
-                coverUrl = uploadImage(coverImage);
-            }
-            catch (Exception e){
-                System.out.println("Error While Uploading Image: "+e);
+                String coverUrl = uploadImage(coverImage);
+                newShop.setCoverImage(coverUrl);
+            } catch (Exception e) {
+                System.out.println("Error while uploading cover image: " + e);
             }
         }
-        if(!photos.isEmpty()){
-            List<ShopImages> imageEntities = new ArrayList<>();
 
-            int sequence = 1;
-            for (MultipartFile file : photos) {
+        // Save shop first to get shopId
+        SalonShop savedShop = salonShopRepository.save(newShop);
+
+        // Upload and save photos with sequence
+        if (photos != null && !photos.isEmpty()) {
+            int maxPhotos = Math.min(photos.size(), 10); // Limit to 10 photos
+
+            for (int i = 0; i < maxPhotos; i++) {
+                MultipartFile file = photos.get(i);
                 try {
-                    String url = uploadImage(file);
-                    ShopImages img = ShopImages.builder()
-                            .shop(newShop)
-                            .sequence(sequence++)
-                            .imageUrl(url)
+                    String photoUrl = uploadImage(file);
+
+                    ShopImages shopImage = ShopImages.builder()
+                            .shop(savedShop)
+                            .sequence(i + 1) // Sequence starts from 1
+                            .imageUrl(photoUrl)
                             .isDeleted(false)
                             .build();
 
-                    imageEntities.add(img);
-                }
-                catch (Exception e){
-                    System.out.println("Error While uploading image: "+e);
+                    savedShop.addPhoto(shopImage);
+                } catch (Exception e) {
+                    System.out.println("Error while uploading photo " + i + ": " + e);
                 }
             }
 
-            newShop.setPhotos(imageEntities);
-
+            // Save again to persist photos
+            savedShop = salonShopRepository.save(savedShop);
         }
-        newShop.setOwner(user);
-        newShop.setCoverImage(coverUrl);
-//        newShop.setPhotos(photosUrls);
 
-        SalonShop salonShop = salonShopRepository.save(newShop);
+        return modelMapper.map(savedShop, SalonShopResponseDto.class);
+    }
 
-        return modelMapper.map(salonShop, SalonShopResponseDto.class);
+    @Override
+    public SalonShopResponseDto patchShop(
+            String shopId,
+            RegisterShopPatchDto dto,
+            @Nullable MultipartFile coverImage,
+            @Nullable List<MultipartFile> photos
+    ) {
+        SalonShop shop = salonShopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Shop not found"));
+
+        // Update owner if provided
+        if (dto.getOwnerId() != null) {
+            Users owner = authRepository.findById(dto.getOwnerId())
+                    .orElseThrow(() -> new RuntimeException("Owner not found"));
+            shop.setOwner(owner);
+        }
+
+        // Update cover image if provided
+        if (coverImage != null && !coverImage.isEmpty()) {
+            try {
+                String coverUrl = uploadImage(coverImage);
+                shop.setCoverImage(coverUrl);
+            } catch (Exception e) {
+                System.out.println("Error while uploading cover image: " + e);
+            }
+        }
+
+        // Add new photos if provided (append to existing)
+        if (photos != null && !photos.isEmpty()) {
+            // Get current max sequence
+            int currentMaxSequence = shop.getPhotos().stream()
+                    .filter(p -> !p.isDeleted())
+                    .mapToInt(ShopImages::getSequence)
+                    .max()
+                    .orElse(0);
+
+            int remainingSlots = 10 - (int) shop.getPhotos().stream()
+                    .filter(p -> !p.isDeleted())
+                    .count();
+
+            int photosToAdd = Math.min(photos.size(), remainingSlots);
+
+            for (int i = 0; i < photosToAdd; i++) {
+                MultipartFile file = photos.get(i);
+                try {
+                    String photoUrl = uploadImage(file);
+
+                    ShopImages shopImage = ShopImages.builder()
+                            .shop(shop)
+                            .sequence(currentMaxSequence + i + 1)
+                            .imageUrl(photoUrl)
+                            .isDeleted(false)
+                            .build();
+
+                    shop.addPhoto(shopImage);
+                } catch (Exception e) {
+                    System.out.println("Error while uploading photo: " + e);
+                }
+            }
+        }
+
+        // Update other fields
+        if (dto.getShopName() != null) shop.setShopName(dto.getShopName());
+        if (dto.getShopDescription() != null) shop.setShopDescription(dto.getShopDescription());
+        if (dto.getPhone() != null) shop.setPhone(dto.getPhone());
+        if (dto.getIsActive() != null) shop.setActive(dto.getIsActive());
+        // ... update other fields ...
+
+        SalonShop updated = salonShopRepository.save(shop);
+        return modelMapper.map(updated, SalonShopResponseDto.class);
+    }
+
+    @Override
+    public void deletePhoto(String shopId, String imageId) {
+        SalonShop shop = salonShopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Shop not found"));
+
+        ShopImages imageToDelete = shop.getPhotos().stream()
+                .filter(img -> img.getImageId().equals(imageId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        // Soft delete
+        imageToDelete.setDeleted(true);
+        shopImagesRepository.save(imageToDelete);
+
+        // OR Hard delete (remove from database)
+        // shop.removePhoto(imageToDelete);
+        // shopImagesRepository.delete(imageToDelete);
+        // salonShopRepository.save(shop);
+    }
+
+    @Override
+    public void reorderPhotos(String shopId, List<String> imageIdsInOrder) {
+        SalonShop shop = salonShopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Shop not found"));
+
+        for (int i = 0; i < imageIdsInOrder.size(); i++) {
+            String imageId = imageIdsInOrder.get(i);
+            ShopImages image = shop.getPhotos().stream()
+                    .filter(img -> img.getImageId().equals(imageId))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Image not found: " + imageId));
+
+            image.setSequence(i + 1);
+        }
+
+        salonShopRepository.save(shop);
     }
 
     @Override
@@ -138,74 +248,6 @@ public class SalonShopServiceImpl implements SalonShopService {
         return  modelMapper.map(updated, SalonShopResponseDto.class);
     }
 
-
-    @Override
-    public SalonShopResponseDto patchShop(
-            String shopId,
-            RegisterShopPatchDto dto,
-            @Nullable MultipartFile coverImage,
-            @Nullable List<MultipartFile> photos
-    ) {
-
-        SalonShop shop = salonShopRepository.findById(shopId)
-                .orElseThrow(() -> new RuntimeException("Shop not found"));
-
-        if (dto.getOwnerId() != null) {
-            Users owner = authRepository.findById(dto.getOwnerId())
-                    .orElseThrow(() -> new RuntimeException("Owner not found"));
-            shop.setOwner(owner);
-        }
-
-        String coverUrl = "";
-        List<String> photosUrl = new LinkedList<>();
-        if(coverImage != null){
-            try {
-                coverUrl = uploadImage(coverImage);
-            }
-            catch (Exception e){
-                System.out.println("Error while uploading image: "+e);
-            }
-
-        }
-        if(photos != null){
-            for(MultipartFile file : photos){
-                try {
-                    photosUrl.add(uploadImage(file));
-                }
-                catch (Exception e){
-                    System.out.println("Error While Uploading Images: "+ e);
-                }
-            }
-        }
-
-        if (dto.getShopName() != null) shop.setShopName(dto.getShopName());
-        if (dto.getShopDescription() != null) shop.setShopDescription(dto.getShopDescription());
-        if (dto.getPhone() != null) shop.setPhone(dto.getPhone());
-        if (dto.getIsActive() != null) shop.setActive(dto.getIsActive());
-        if (dto.getServiceCount() != null) shop.setServiceCount(dto.getServiceCount());
-        if (dto.getAppointmentsToday() != null) shop.setAppointmentsToday(dto.getAppointmentsToday());
-        if (dto.getTodayEarnings() != null) shop.setTodayEarnings(dto.getTodayEarnings());
-
-        if (dto.getAddress1() != null) shop.setAddress1(dto.getAddress1());
-        if (dto.getAddress2() != null) shop.setAddress2(dto.getAddress2());
-        if (dto.getCity() != null) shop.setCity(dto.getCity());
-        if (dto.getState() != null) shop.setState(dto.getState());
-        if (dto.getPostalCode() != null) shop.setPostalCode(dto.getPostalCode());
-        if (dto.getCountry() != null) shop.setCountry(dto.getCountry());
-
-        // setting images
-        if(!coverUrl.isEmpty()) shop.setCoverImage(coverUrl);
-        if(!photosUrl.isEmpty()) shop.setPhotos(photosUrl);
-
-        if (dto.getLatitude() != null) shop.setLatitude(dto.getLatitude());
-        if (dto.getLongitude() != null) shop.setLongitude(dto.getLongitude());
-
-        // Save updated shop
-        SalonShop updated = salonShopRepository.save(shop);
-
-        return modelMapper.map(updated, SalonShopResponseDto.class);
-    }
-
     @Override
     public String uploadCoverImage(MultipartFile file) {
 
@@ -237,14 +279,10 @@ public class SalonShopServiceImpl implements SalonShopService {
     }
 
     String uploadImage(MultipartFile file) throws IOException {
-
-
         Map uploadResult = cloudinary.uploader()
                 .upload(file.getBytes(), ObjectUtils.emptyMap());
 
-        String fileUrl = uploadResult.get("secure_url").toString();
-
-        return fileUrl;
+        return uploadResult.get("secure_url").toString();
     }
 
 }

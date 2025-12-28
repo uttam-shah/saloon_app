@@ -89,6 +89,26 @@ public class ShopController {
         return ResponseEntity.ok(urls);
     }
 
+    // Delete photo endpoint
+    @DeleteMapping("/{shopId}/photos/{imageId}")
+    public ResponseEntity<Void> deletePhoto(
+            @PathVariable String shopId,
+            @PathVariable String imageId
+    ) {
+        salonShopService.deletePhoto(shopId, imageId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Reorder photos endpoint
+    @PutMapping("/{shopId}/photos/reorder")
+    public ResponseEntity<Void> reorderPhotos(
+            @PathVariable String shopId,
+            @RequestBody List<String> imageIdsInOrder
+    ) {
+        salonShopService.reorderPhotos(shopId, imageIdsInOrder);
+        return ResponseEntity.ok().build();
+    }
+
 
 
 }

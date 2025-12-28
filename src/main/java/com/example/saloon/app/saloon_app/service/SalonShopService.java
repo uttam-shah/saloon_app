@@ -21,4 +21,8 @@ public interface SalonShopService {
     String uploadCoverImage(MultipartFile file);
 
     List<String> uploadShopPhotos(List<MultipartFile> files);
+
+    void deletePhoto(String shopId, String imageId);
+
+    void reorderPhotos(String shopId, List<String> imageIdsInOrder);
 }

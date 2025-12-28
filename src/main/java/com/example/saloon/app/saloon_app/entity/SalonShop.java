@@ -94,5 +94,16 @@ public class SalonShop {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void addPhoto(ShopImages photo) {
+        photos.add(photo);
+        photo.setShop(this);
+    }
+
+    // Helper method to remove photo
+    public void removePhoto(ShopImages photo) {
+        photos.remove(photo);
+        photo.setShop(null);
+    }
 }
 

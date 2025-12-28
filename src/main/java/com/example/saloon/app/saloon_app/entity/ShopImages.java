@@ -15,19 +15,20 @@ import lombok.NoArgsConstructor;
 public class ShopImages {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "image_id", nullable = false, updatable = false)
     private String imageId;
 
+    // FIX: Add proper ManyToOne relationship
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     private SalonShop shop;
 
-    // only 10 photos are allowed
-    @Column(nullable = false)
+    @Column(name = "sequence", nullable = false)
     private int sequence;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    @Column(nullable = false)
+    @Column(name = "is_deleted")
     private boolean isDeleted = false;
 }
