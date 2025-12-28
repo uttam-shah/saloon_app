@@ -6,6 +6,7 @@ import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
+import com.example.saloon.app.saloon_app.entity.ShopImages;
 import com.example.saloon.app.saloon_app.entity.Users;
 import com.example.saloon.app.saloon_app.repository.AuthRepository;
 import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
@@ -53,6 +54,7 @@ public class SalonShopServiceImpl implements SalonShopService {
         Users user = authRepository.findById(registerShopDto.getOwnerId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         String coverUrl = "";
+
         List<String> photosUrls = new LinkedList<>();
         if(!coverImage.isEmpty()){
             try {
@@ -63,18 +65,32 @@ public class SalonShopServiceImpl implements SalonShopService {
             }
         }
         if(!photos.isEmpty()){
-            for(MultipartFile file : photos){
+            List<ShopImages> imageEntities = new ArrayList<>();
+
+            int sequence = 1;
+            for (MultipartFile file : photos) {
                 try {
-                    photosUrls.add(uploadImage(file));
+                    String url = uploadImage(file);
+                    ShopImages img = ShopImages.builder()
+                            .shop(newShop)
+                            .sequence(sequence++)
+                            .imageUrl(url)
+                            .isDeleted(false)
+                            .build();
+
+                    imageEntities.add(img);
                 }
                 catch (Exception e){
-                    System.out.println("Error while uploading Image: "+e);
+                    System.out.println("Error While uploading image: "+e);
                 }
             }
+
+            newShop.setPhotos(imageEntities);
+
         }
         newShop.setOwner(user);
         newShop.setCoverImage(coverUrl);
-        newShop.setPhotos(photosUrls);
+//        newShop.setPhotos(photosUrls);
 
         SalonShop salonShop = salonShopRepository.save(newShop);
 
@@ -106,7 +122,7 @@ public class SalonShopServiceImpl implements SalonShopService {
         shop.setShopDescription(dto.getShopDescription());
         shop.setPhone(dto.getPhone());
         shop.setCoverImage(dto.getCoverImage());
-        shop.setPhotos(dto.getPhotos());
+//        shop.setPhotos(dto.getPhotos());
         shop.setServiceCount(dto.getServiceCount());
         shop.setAppointmentsToday(dto.getAppointmentsToday());
         shop.setTodayEarnings(dto.getTodayEarnings());

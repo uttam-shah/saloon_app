@@ -40,6 +40,20 @@ public class ShopController {
                 .body(salonShopService.RegisterShop(registerShopDto, coverImage, photos));
     }
 
+
+    //Patch for partial update
+    @PatchMapping(value = "/{shopId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SalonShopResponseDto> patchShop(
+            @PathVariable String shopId,
+            @ModelAttribute RegisterShopPatchDto dto,
+            @RequestParam("coverImage") MultipartFile coverImage,
+            @RequestParam("photos") List<MultipartFile> photos
+    ){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(salonShopService.patchShop(shopId, dto, coverImage, photos ));
+    }
+
     // Get Shops by UserId
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<SalonShopResponseDto>> getShops(@PathVariable String userId){
@@ -57,19 +71,6 @@ public class ShopController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(salonShopService.updateShop(shopId, registerShopDto));
-    }
-
-    //Patch for partial update
-    @PatchMapping(value = "/{shopId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SalonShopResponseDto> patchShop(
-            @PathVariable String shopId,
-            @ModelAttribute RegisterShopPatchDto dto,
-            @RequestParam("coverImage") MultipartFile coverImage,
-            @RequestParam("photos") List<MultipartFile> photos
-    ){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(salonShopService.patchShop(shopId, dto, coverImage, photos ));
     }
 
     @PostMapping("/{shopId}/cover-image")

@@ -15,18 +15,19 @@ import lombok.NoArgsConstructor;
 public class ShopImages {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "image_id", nullable = false, updatable = false)
     private String imageId;
 
-    @Column(name = "shop_id")
-    private String shopId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    private SalonShop shop;
 
-    @Column(name = "image_url", updatable = false)
+    // only 10 photos are allowed
+    @Column(nullable = false)
+    private int sequence;
+
+    @Column(nullable = false, updatable = false)
     private String imageUrl;
 
-    @Column(name = "is_main", updatable = true)
-    private boolean isMain;
-
-    @Column(name = "is_deleted", nullable = true)
+    @Column(nullable = false)
     private boolean isDeleted = false;
 }

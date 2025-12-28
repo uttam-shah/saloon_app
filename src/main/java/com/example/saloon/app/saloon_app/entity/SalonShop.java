@@ -8,6 +8,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,8 +54,14 @@ public class SalonShop {
     @Column(name = "cover_image")
     private String coverImage;
 
-    @Column(name = "photos")
-    private List<String> photos;
+    @OneToMany(
+            mappedBy = "shop",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("sequence ASC")
+    private List<ShopImages> photos = new LinkedList<>();
+
 
     @Column(name = "address1", length = 255, nullable = false)
     private String address1;
