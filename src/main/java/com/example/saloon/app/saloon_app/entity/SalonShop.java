@@ -95,6 +95,25 @@ public class SalonShop {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToMany(
+            mappedBy = "shop",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("dayOfWeek ASC")
+    private List<ShopOpeningHours> openingHours = new ArrayList<>();
+
+    // Helper methods
+    public void addOpeningHour(ShopOpeningHours hour) {
+        openingHours.add(hour);
+        hour.setShop(this);
+    }
+
+    public void removeOpeningHour(ShopOpeningHours hour) {
+        openingHours.remove(hour);
+        hour.setShop(null);
+    }
+
     public void addPhoto(ShopImages photo) {
         photos.add(photo);
         photo.setShop(this);
@@ -105,5 +124,7 @@ public class SalonShop {
         photos.remove(photo);
         photo.setShop(null);
     }
+
+
 }
 

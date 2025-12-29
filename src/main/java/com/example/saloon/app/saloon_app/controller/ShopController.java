@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.service.SalonShopService;
 import jakarta.validation.Valid;
@@ -28,11 +29,11 @@ public class ShopController {
     private Cloudinary cloudinary;
 
     // Register Shop
-    @PostMapping()
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SalonShopResponseDto> registerShop(
-            @RequestBody @Valid RegisterShopDto registerShopDto,
-            @RequestParam("coverImage") MultipartFile coverImage,
-            @RequestParam("photos") List<MultipartFile> photos
+            @ModelAttribute @Valid RegisterShopDto registerShopDto,
+            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestParam(value = "photos", required = false) List<MultipartFile> photos
     ){
         System.out.println("POST shop");
         return ResponseEntity
@@ -46,8 +47,8 @@ public class ShopController {
     public ResponseEntity<SalonShopResponseDto> patchShop(
             @PathVariable String shopId,
             @ModelAttribute RegisterShopPatchDto dto,
-            @RequestParam("coverImage") MultipartFile coverImage,
-            @RequestParam("photos") List<MultipartFile> photos
+            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
+            @RequestParam(value = "photos", required = false) List<MultipartFile> photos
     ){
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -56,11 +57,21 @@ public class ShopController {
 
     // Get Shops by UserId
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<SalonShopResponseDto>> getShops(@PathVariable String userId){
+    public ResponseEntity<List<SalonShopResponseDto>> getShops(
+            @PathVariable String userId){
         System.out.println("GET shop/user/"+userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(salonShopService.getShops(userId));
+    }
+
+    // Get Shop by shopId
+    @GetMapping("/{shopId}")
+    public ResponseEntity<ShopDetailDto> getShopById(
+            @PathVariable String shopId){
+        return  ResponseEntity
+                .status(HttpStatus.OK)
+                .body(salonShopService.getShopById(shopId));
     }
 
     // put Mapping for full shop update

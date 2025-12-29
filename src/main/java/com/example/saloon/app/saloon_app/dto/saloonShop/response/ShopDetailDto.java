@@ -1,6 +1,5 @@
 package com.example.saloon.app.saloon_app.dto.saloonShop.response;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SalonShopResponseDto {
+public class ShopDetailDto {
     private String shopId;
     private String shopName;
     private String shopDescription;
@@ -31,7 +30,4 @@ public class SalonShopResponseDto {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private OwnerDto owner;
-    private List<OpeningHourDto> openingHours;
 }
-
-

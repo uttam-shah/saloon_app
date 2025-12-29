@@ -1,5 +1,6 @@
 package com.example.saloon.app.saloon_app.dto.saloonShop;
 
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.OpeningHourDto;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -29,10 +30,6 @@ public class RegisterShopDto {
 
     private int todayEarnings = 0;
 
-    private String coverImage;
-
-    private List<String> photos;
-
     private String address1;
 
     private String address2;
@@ -48,6 +45,8 @@ public class RegisterShopDto {
 
     @NotBlank(message = "Country is Required")
     private String country;
+
+    private List<OpeningHourDto> openingHours;
 
     private BigDecimal latitude;
 

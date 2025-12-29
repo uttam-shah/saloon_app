@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.ShopImages;
 import com.example.saloon.app.saloon_app.entity.Users;
@@ -208,6 +209,14 @@ public class SalonShopServiceImpl implements SalonShopService {
     }
 
     @Override
+    public ShopDetailDto getShopById(String shopId) {
+        SalonShop shop = salonShopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("shopId not found"));
+
+        return modelMapper.map(shop, ShopDetailDto.class);
+    }
+
+    @Override
     public List<SalonShopResponseDto> getShops(String userId) {
         Users owner = authRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not flund"));
@@ -231,7 +240,7 @@ public class SalonShopServiceImpl implements SalonShopService {
         shop.setActive(dto.isActive());
         shop.setShopDescription(dto.getShopDescription());
         shop.setPhone(dto.getPhone());
-        shop.setCoverImage(dto.getCoverImage());
+//        shop.setCoverImage(dto.getCoverImage());
 //        shop.setPhotos(dto.getPhotos());
         shop.setServiceCount(dto.getServiceCount());
         shop.setAppointmentsToday(dto.getAppointmentsToday());

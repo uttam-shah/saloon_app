@@ -3,6 +3,7 @@ package com.example.saloon.app.saloon_app.service;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,4 +26,6 @@ public interface SalonShopService {
     void deletePhoto(String shopId, String imageId);
 
     void reorderPhotos(String shopId, List<String> imageIdsInOrder);
+
+    ShopDetailDto getShopById(String shopId);
 }
