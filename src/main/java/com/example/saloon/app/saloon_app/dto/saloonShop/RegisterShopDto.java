@@ -1,11 +1,15 @@
 package com.example.saloon.app.saloon_app.dto.saloonShop;
 
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.OpeningHourDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -46,7 +50,21 @@ public class RegisterShopDto {
     @NotBlank(message = "Country is Required")
     private String country;
 
-    private List<OpeningHourDto> openingHours;
+//    private List<OpeningHourDto> openingHours;
+    private String openingHours;
+
+    public List<OpeningHourDto> getParsedOpeningHours() {
+        if (openingHours == null || openingHours.isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(openingHours,
+                    new TypeReference<List<OpeningHourDto>>() {});
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse opening hours", e);
+        }
+    }
 
     private BigDecimal latitude;
 
