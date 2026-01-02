@@ -50,21 +50,7 @@ public class RegisterShopDto {
     @NotBlank(message = "Country is Required")
     private String country;
 
-//    private List<OpeningHourDto> openingHours;
-    private String openingHours;
-
-    public List<OpeningHourDto> getParsedOpeningHours() {
-        if (openingHours == null || openingHours.isEmpty()) {
-            return new ArrayList<>();
-        }
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(openingHours,
-                    new TypeReference<List<OpeningHourDto>>() {});
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse opening hours", e);
-        }
-    }
+    private List<OpeningHourDto> openingHours;
 
     private BigDecimal latitude;
 

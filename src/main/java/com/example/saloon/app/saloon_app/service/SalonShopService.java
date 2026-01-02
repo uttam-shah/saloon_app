@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface SalonShopService {
 
-    SalonShopResponseDto RegisterShop(RegisterShopDto registerShopDto, MultipartFile coverImage, List<MultipartFile> photos);
+    SalonShopResponseDto RegisterShop(RegisterShopDto registerShopDto);
 
     List<SalonShopResponseDto> getShops(String userId);
 

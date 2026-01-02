@@ -8,10 +8,12 @@ import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopRespon
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.ShopImages;
+import com.example.saloon.app.saloon_app.entity.ShopOpeningHours;
 import com.example.saloon.app.saloon_app.entity.Users;
 import com.example.saloon.app.saloon_app.repository.AuthRepository;
 import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
 import com.example.saloon.app.saloon_app.repository.ShopImagesRepository;
+import com.example.saloon.app.saloon_app.repository.ShopOpeningHoursRepository;
 import com.example.saloon.app.saloon_app.service.SalonShopService;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -37,15 +39,21 @@ public class SalonShopServiceImpl implements SalonShopService {
     private final ShopImagesRepository shopImagesRepository;
     private final AuthRepository authRepository;
     private final ModelMapper modelMapper;
+    private  final ShopOpeningHoursRepository openingHoursRepository;
+
     @Autowired
     private Cloudinary cloudinary;
 
     public SalonShopResponseDto RegisterShop(
-            RegisterShopDto registerShopDto,
-            MultipartFile coverImage,
-            List<MultipartFile> photos
+            RegisterShopDto registerShopDto
     ) {
+        System.out.println("RegisterShop Method");
+        System.out.println(registerShopDto);
+//        modelMapper.typeMap(RegisterShopDto.class, SalonShop.class)
+//                .addMappings(mapper -> mapper.skip(SalonShop::setOpeningHours));
         SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
+        System.out.println(newShop);
+
 
         newShop.setShopId(null);
         newShop.setCreatedAt(null);
@@ -55,46 +63,10 @@ public class SalonShopServiceImpl implements SalonShopService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         newShop.setOwner(user);
-
-        // Upload cover image
-        if (coverImage != null && !coverImage.isEmpty()) {
-            try {
-                String coverUrl = uploadImage(coverImage);
-                newShop.setCoverImage(coverUrl);
-            } catch (Exception e) {
-                System.out.println("Error while uploading cover image: " + e);
-            }
-        }
-
         // Save shop first to get shopId
         SalonShop savedShop = salonShopRepository.save(newShop);
 
-        // Upload and save photos with sequence
-        if (photos != null && !photos.isEmpty()) {
-            int maxPhotos = Math.min(photos.size(), 10); // Limit to 10 photos
-
-            for (int i = 0; i < maxPhotos; i++) {
-                MultipartFile file = photos.get(i);
-                try {
-                    String photoUrl = uploadImage(file);
-
-                    ShopImages shopImage = ShopImages.builder()
-                            .shop(savedShop)
-                            .sequence(i + 1) // Sequence starts from 1
-                            .imageUrl(photoUrl)
-                            .isDeleted(false)
-                            .build();
-
-                    savedShop.addPhoto(shopImage);
-                } catch (Exception e) {
-                    System.out.println("Error while uploading photo " + i + ": " + e);
-                }
-            }
-
-            // Save again to persist photos
-            savedShop = salonShopRepository.save(savedShop);
-        }
-
+//       savedShop.setOpeningHours(openingHours);
         return modelMapper.map(savedShop, SalonShopResponseDto.class);
     }
 

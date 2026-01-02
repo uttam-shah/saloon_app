@@ -103,17 +103,6 @@ public class SalonShop {
     @OrderBy("dayOfWeek ASC")
     private List<ShopOpeningHours> openingHours = new ArrayList<>();
 
-    // Helper methods
-    public void addOpeningHour(ShopOpeningHours hour) {
-        openingHours.add(hour);
-        hour.setShop(this);
-    }
-
-    public void removeOpeningHour(ShopOpeningHours hour) {
-        openingHours.remove(hour);
-        hour.setShop(null);
-    }
-
     public void addPhoto(ShopImages photo) {
         photos.add(photo);
         photo.setShop(this);

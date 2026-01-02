@@ -29,30 +29,46 @@ public class ShopController {
     private Cloudinary cloudinary;
 
     // Register Shop
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping()
     public ResponseEntity<SalonShopResponseDto> registerShop(
-            @ModelAttribute @Valid RegisterShopDto registerShopDto,
-            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
-            @RequestParam(value = "photos", required = false) List<MultipartFile> photos
+            @RequestBody @Valid RegisterShopDto registerShopDto
+//            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
+//            @RequestParam(value = "photos", required = false) List<MultipartFile> photos
     ){
         System.out.println("POST shop");
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(salonShopService.RegisterShop(registerShopDto, coverImage, photos));
+                .body(salonShopService.RegisterShop(registerShopDto));
     }
 
 
     //Patch for partial update
-    @PatchMapping(value = "/{shopId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{shopId}")
     public ResponseEntity<SalonShopResponseDto> patchShop(
             @PathVariable String shopId,
-            @ModelAttribute RegisterShopPatchDto dto,
-            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
-            @RequestParam(value = "photos", required = false) List<MultipartFile> photos
+            @RequestBody RegisterShopPatchDto dto
+//            @RequestParam(value = "coverImage", required = false) MultipartFile coverImage,
+//            @RequestParam(value = "photos", required = false) List<MultipartFile> photos
     ){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(salonShopService.patchShop(shopId, dto, coverImage, photos ));
+                .body(salonShopService.patchShop(shopId, dto, null, null ));
+    }
+
+    @PostMapping("/{shopId}/cover-image")
+    public ResponseEntity<String> uploadCoverImage(
+            @RequestParam("coverImage") MultipartFile file) {
+
+        String url = salonShopService.uploadCoverImage(file);
+        return ResponseEntity.ok(url);
+    }
+
+    @PostMapping("/{shopId}/photos")
+    public ResponseEntity<List<String>> uploadShopPhotos(
+            @RequestParam("photos") List<MultipartFile> files) {
+
+        List<String> urls = salonShopService.uploadShopPhotos(files);
+        return ResponseEntity.ok(urls);
     }
 
     // Get Shops by UserId
@@ -82,22 +98,6 @@ public class ShopController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(salonShopService.updateShop(shopId, registerShopDto));
-    }
-
-    @PostMapping("/{shopId}/cover-image")
-    public ResponseEntity<String> uploadCoverImage(
-            @RequestParam("coverImage") MultipartFile file) {
-
-        String url = salonShopService.uploadCoverImage(file);
-        return ResponseEntity.ok(url);
-    }
-
-    @PostMapping("/{shopId}/photos")
-    public ResponseEntity<List<String>> uploadShopPhotos(
-            @RequestParam("photos") List<MultipartFile> files) {
-
-        List<String> urls = salonShopService.uploadShopPhotos(files);
-        return ResponseEntity.ok(urls);
     }
 
     // Delete photo endpoint
