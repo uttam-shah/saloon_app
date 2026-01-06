@@ -103,6 +103,7 @@ public class SalonShop {
     @OrderBy("dayOfWeek ASC")
     private List<ShopOpeningHours> openingHours = new ArrayList<>();
 
+
     public void addPhoto(ShopImages photo) {
         photos.add(photo);
         photo.setShop(this);

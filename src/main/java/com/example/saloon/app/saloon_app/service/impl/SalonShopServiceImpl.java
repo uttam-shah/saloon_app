@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.OpeningHourDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
@@ -48,7 +49,7 @@ public class SalonShopServiceImpl implements SalonShopService {
             RegisterShopDto registerShopDto
     ) {
         System.out.println("RegisterShop Method");
-        System.out.println(registerShopDto);
+        System.out.println("Body data: "+registerShopDto);
 //        modelMapper.typeMap(RegisterShopDto.class, SalonShop.class)
 //                .addMappings(mapper -> mapper.skip(SalonShop::setOpeningHours));
         SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
@@ -66,8 +67,24 @@ public class SalonShopServiceImpl implements SalonShopService {
         // Save shop first to get shopId
         SalonShop savedShop = salonShopRepository.save(newShop);
 
+        if(registerShopDto.getOpeningHours() != null && !registerShopDto.getOpeningHours().isEmpty()) {
+            List<ShopOpeningHours> hoursList = new LinkedList<>();
+
+            for (OpeningHourDto oh : registerShopDto.getOpeningHours()) {
+                ShopOpeningHours hours = ShopOpeningHours.builder()
+                        .shop(savedShop)
+                        .dayOfWeek(oh.getDayOfWeek())
+                        .isOpen(oh.isOpen())
+                        .openTime(oh.getOpenTime())
+                        .closeTime(oh.getCloseTime())
+                        .build();
+            }
+            savedShop.getOpeningHours().addAll(hoursList);
+        }
+
+        SalonShop finalShop = salonShopRepository.save(savedShop);
 //       savedShop.setOpeningHours(openingHours);
-        return modelMapper.map(savedShop, SalonShopResponseDto.class);
+        return modelMapper.map(finalShop, SalonShopResponseDto.class);
     }
 
     @Override

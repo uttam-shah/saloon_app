@@ -17,24 +17,18 @@ public class ShopOpeningHours {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", updatable = false, nullable = false)
     private String id;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     private SalonShop shop;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "day_of_week", nullable = false)
-    private DayOfWeek dayOfWeek;  // MONDAY, TUESDAY, etc.
+    @Column(nullable = false)
+    private DayOfWeek dayOfWeek;
 
-    @Column(name = "is_open", nullable = false)
-    private boolean isOpen = true;
+    @Column(nullable = false)
+    private boolean isOpen;
 
-    @Column(name = "open_time")
     private LocalTime openTime;
-
-    @Column(name = "close_time")
     private LocalTime closeTime;
 }
