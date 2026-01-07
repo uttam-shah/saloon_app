@@ -5,6 +5,7 @@ import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopImageDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.service.SalonShopService;
 import jakarta.validation.Valid;
@@ -52,22 +53,25 @@ public class ShopController {
     ){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(salonShopService.patchShop(shopId, dto, null, null ));
+                .body(salonShopService.patchShop(shopId, dto ));
     }
 
     @PostMapping("/{shopId}/cover-image")
     public ResponseEntity<String> uploadCoverImage(
+            @PathVariable String shopId,
             @RequestParam("coverImage") MultipartFile file) {
 
-        String url = salonShopService.uploadCoverImage(file);
+        String url = salonShopService.uploadCoverImage(file, shopId);
         return ResponseEntity.ok(url);
     }
 
     @PostMapping("/{shopId}/photos")
-    public ResponseEntity<List<String>> uploadShopPhotos(
+    public ResponseEntity<List<ShopImageDto>> uploadShopPhotos(
+            @PathVariable String shopId,
             @RequestParam("photos") List<MultipartFile> files) {
 
-        List<String> urls = salonShopService.uploadShopPhotos(files);
+        System.out.println("/shop/"+shopId+"/photos"+files);
+        List<ShopImageDto> urls = salonShopService.uploadShopPhotos(files, shopId);
         return ResponseEntity.ok(urls);
     }
 

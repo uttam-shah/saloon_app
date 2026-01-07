@@ -59,6 +59,7 @@ public class SalonShop {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @Builder.Default
     @OrderBy("sequence ASC")
     private List<ShopImages> photos = new LinkedList<>();
 
@@ -101,6 +102,7 @@ public class SalonShop {
             orphanRemoval = true
     )
     @OrderBy("dayOfWeek ASC")
+    @Builder.Default
     private List<ShopOpeningHours> openingHours = new ArrayList<>();
 
 

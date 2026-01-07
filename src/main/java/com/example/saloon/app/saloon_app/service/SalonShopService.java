@@ -4,6 +4,7 @@ import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopImageDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,11 +18,11 @@ public interface SalonShopService {
 
     SalonShopResponseDto updateShop(String shopId, RegisterShopDto registerShopDto);
 
-    SalonShopResponseDto patchShop(String shopId, RegisterShopPatchDto dto, MultipartFile coverImage, List<MultipartFile> photos);
+    SalonShopResponseDto patchShop(String shopId, RegisterShopPatchDto dto);
 
-    String uploadCoverImage(MultipartFile file);
+    String uploadCoverImage(MultipartFile file, String shopId);
 
-    List<String> uploadShopPhotos(List<MultipartFile> files);
+    List<ShopImageDto> uploadShopPhotos(List<MultipartFile> files, String shopId);
 
     void deletePhoto(String shopId, String imageId);
 

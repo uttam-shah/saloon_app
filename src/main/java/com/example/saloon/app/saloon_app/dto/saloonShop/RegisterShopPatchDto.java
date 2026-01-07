@@ -1,5 +1,6 @@
 package com.example.saloon.app.saloon_app.dto.saloonShop;
 
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.OpeningHourDto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,4 +31,6 @@ public class RegisterShopPatchDto {
 
     private BigDecimal latitude;
     private BigDecimal longitude;
+
+    private List<OpeningHourDto> openingHours;
 }

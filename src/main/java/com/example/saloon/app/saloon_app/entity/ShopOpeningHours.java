@@ -23,10 +23,10 @@ public class ShopOpeningHours {
     @JoinColumn(name = "shop_id", nullable = false)
     private SalonShop shop;
 
-    @Column(nullable = false)
+    @Column()
     private DayOfWeek dayOfWeek;
 
-    @Column(nullable = false)
+    @Column()
     private boolean isOpen;
 
     private LocalTime openTime;

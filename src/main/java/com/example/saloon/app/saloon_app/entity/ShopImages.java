@@ -23,7 +23,7 @@ public class ShopImages {
     @JoinColumn(name = "shop_id", nullable = false)
     private SalonShop shop;
 
-    @Column(name = "sequence", nullable = false)
+    @Column(name = "sequence")
     private int sequence;
 
     @Column(name = "image_url", nullable = false)

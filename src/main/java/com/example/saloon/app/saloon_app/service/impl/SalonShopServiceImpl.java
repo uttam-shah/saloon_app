@@ -7,6 +7,7 @@ import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.OpeningHourDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopImageDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.ShopImages;
 import com.example.saloon.app.saloon_app.entity.ShopOpeningHours;
@@ -23,6 +24,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.IIOException;
@@ -52,9 +54,26 @@ public class SalonShopServiceImpl implements SalonShopService {
         System.out.println("Body data: "+registerShopDto);
 //        modelMapper.typeMap(RegisterShopDto.class, SalonShop.class)
 //                .addMappings(mapper -> mapper.skip(SalonShop::setOpeningHours));
-        SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
-        System.out.println(newShop);
-
+//        SalonShop newShop = modelMapper.map(registerShopDto, SalonShop.class);
+        SalonShop newShop = SalonShop.builder()
+                .shopName(registerShopDto.getShopName())
+                .shopDescription(registerShopDto.getShopDescription())
+                .phone(registerShopDto.getPhone())
+                .isActive(true)
+                .serviceCount(0)
+                .appointmentsToday(0)
+                .todayEarnings(0)
+//                .coverImage(registerShopDto.getCover())
+                .address1(registerShopDto.getAddress1())
+                .address2(registerShopDto.getAddress2())
+                .city(registerShopDto.getCity())
+                .state(registerShopDto.getState())
+                .postalCode(registerShopDto.getPostalCode())
+                .country(registerShopDto.getCountry())
+                .latitude(registerShopDto.getLatitude())
+                .longitude(registerShopDto.getLongitude())
+                .build();
+        System.out.println("Mapped Shop: " + newShop);
 
         newShop.setShopId(null);
         newShop.setCreatedAt(null);
@@ -78,6 +97,7 @@ public class SalonShopServiceImpl implements SalonShopService {
                         .openTime(oh.getOpenTime())
                         .closeTime(oh.getCloseTime())
                         .build();
+                hoursList.add(hours);
             }
             savedShop.getOpeningHours().addAll(hoursList);
         }
@@ -88,75 +108,93 @@ public class SalonShopServiceImpl implements SalonShopService {
     }
 
     @Override
+    @Transactional
     public SalonShopResponseDto patchShop(
             String shopId,
-            RegisterShopPatchDto dto,
-            @Nullable MultipartFile coverImage,
-            @Nullable List<MultipartFile> photos
+            RegisterShopPatchDto dto
     ) {
+        // Find existing shop
         SalonShop shop = salonShopRepository.findById(shopId)
-                .orElseThrow(() -> new RuntimeException("Shop not found"));
+                .orElseThrow(() -> new RuntimeException("Shop not found with ID: " + shopId));
 
         // Update owner if provided
         if (dto.getOwnerId() != null) {
             Users owner = authRepository.findById(dto.getOwnerId())
-                    .orElseThrow(() -> new RuntimeException("Owner not found"));
+                    .orElseThrow(() -> new RuntimeException("Owner not found with ID: " + dto.getOwnerId()));
             shop.setOwner(owner);
         }
 
-        // Update cover image if provided
-        if (coverImage != null && !coverImage.isEmpty()) {
-            try {
-                String coverUrl = uploadImage(coverImage);
-                shop.setCoverImage(coverUrl);
-            } catch (Exception e) {
-                System.out.println("Error while uploading cover image: " + e);
-            }
+        // Update basic fields
+        if (dto.getShopName() != null) {
+            shop.setShopName(dto.getShopName());
+        }
+        if (dto.getShopDescription() != null) {
+            shop.setShopDescription(dto.getShopDescription());
+        }
+        if (dto.getPhone() != null) {
+            shop.setPhone(dto.getPhone());
+        }
+        if (dto.getIsActive() != null) {
+            shop.setActive(dto.getIsActive());
         }
 
-        // Add new photos if provided (append to existing)
-        if (photos != null && !photos.isEmpty()) {
-            // Get current max sequence
-            int currentMaxSequence = shop.getPhotos().stream()
-                    .filter(p -> !p.isDeleted())
-                    .mapToInt(ShopImages::getSequence)
-                    .max()
-                    .orElse(0);
-
-            int remainingSlots = 10 - (int) shop.getPhotos().stream()
-                    .filter(p -> !p.isDeleted())
-                    .count();
-
-            int photosToAdd = Math.min(photos.size(), remainingSlots);
-
-            for (int i = 0; i < photosToAdd; i++) {
-                MultipartFile file = photos.get(i);
-                try {
-                    String photoUrl = uploadImage(file);
-
-                    ShopImages shopImage = ShopImages.builder()
-                            .shop(shop)
-                            .sequence(currentMaxSequence + i + 1)
-                            .imageUrl(photoUrl)
-                            .isDeleted(false)
-                            .build();
-
-                    shop.addPhoto(shopImage);
-                } catch (Exception e) {
-                    System.out.println("Error while uploading photo: " + e);
-                }
-            }
+        // Update address fields
+        if (dto.getAddress1() != null) {
+            shop.setAddress1(dto.getAddress1());
+        }
+        if (dto.getAddress2() != null) {
+            shop.setAddress2(dto.getAddress2());
+        }
+        if (dto.getCity() != null) {
+            shop.setCity(dto.getCity());
+        }
+        if (dto.getState() != null) {
+            shop.setState(dto.getState());
+        }
+        if (dto.getPostalCode() != null) {
+            shop.setPostalCode(dto.getPostalCode());
+        }
+        if (dto.getCountry() != null) {
+            shop.setCountry(dto.getCountry());
         }
 
-        // Update other fields
-        if (dto.getShopName() != null) shop.setShopName(dto.getShopName());
-        if (dto.getShopDescription() != null) shop.setShopDescription(dto.getShopDescription());
-        if (dto.getPhone() != null) shop.setPhone(dto.getPhone());
-        if (dto.getIsActive() != null) shop.setActive(dto.getIsActive());
-        // ... update other fields ...
+        // Update location coordinates
+        if (dto.getLatitude() != null) {
+            shop.setLatitude(dto.getLatitude());
+        }
+        if (dto.getLongitude() != null) {
+            shop.setLongitude(dto.getLongitude());
+        }
 
-        SalonShop updated = salonShopRepository.save(shop);
-        return modelMapper.map(updated, SalonShopResponseDto.class);
+        // Update opening hours if provided
+        if (dto.getOpeningHours() != null) {
+            updateOpeningHours(shop, dto.getOpeningHours());
+        }
+
+        // Save and return
+        SalonShop updatedShop = salonShopRepository.save(shop);
+        return modelMapper.map(updatedShop, SalonShopResponseDto.class);
+    }
+
+    private void updateOpeningHours(SalonShop shop, List<OpeningHourDto> newHours) {
+        // Clear existing hours (triggers orphan removal for deleted items)
+        shop.getOpeningHours().clear();
+
+        // Add new hours to the SAME collection (don't replace the collection!)
+        if (newHours != null && !newHours.isEmpty()) {
+            for (OpeningHourDto dto : newHours) {
+                ShopOpeningHours hours = ShopOpeningHours.builder()
+                        .shop(shop)
+                        .dayOfWeek(dto.getDayOfWeek())
+                        .isOpen(dto.isOpen())
+                        .openTime(dto.getOpenTime())
+                        .closeTime(dto.getCloseTime())
+                        .build();
+
+                // Add to existing collection (NOT shop.setOpeningHours())
+                shop.getOpeningHours().add(hours);
+            }
+        }
     }
 
     @Override
@@ -247,10 +285,15 @@ public class SalonShopServiceImpl implements SalonShopService {
     }
 
     @Override
-    public String uploadCoverImage(MultipartFile file) {
+    public String uploadCoverImage(MultipartFile file, String shopId) {
 
         try {
-            return uploadImage(file);
+            SalonShop shop = salonShopRepository.findById(shopId)
+                    .orElseThrow(() -> new RuntimeException("userId not found"));
+            var url = uploadImage(file);
+            shop.setCoverImage(url);
+            salonShopRepository.save(shop);
+            return  url;
         }
         catch (IOException e){
             throw new RuntimeException("Exception: ", e);
@@ -259,8 +302,9 @@ public class SalonShopServiceImpl implements SalonShopService {
     }
 
     @Override
-    public List<String> uploadShopPhotos(List<MultipartFile> files) {
+    public List<ShopImageDto> uploadShopPhotos(List<MultipartFile> files, String shopId) {
         List<String> links = new LinkedList<>();
+        List<ShopImageDto> linksDto = new LinkedList<>();
 
         for(MultipartFile file : files){
             try {
@@ -272,7 +316,21 @@ public class SalonShopServiceImpl implements SalonShopService {
 
         }
 
-        return  links;
+        SalonShop shop = salonShopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("ShopId not found"));
+
+        for(String link: links){
+            ShopImages image = ShopImages.builder()
+                    .shop(shop)
+                    .imageUrl(link)
+                    .isDeleted(false)
+                    .build();
+
+            ShopImages I = shopImagesRepository.save(image);
+            linksDto.add(modelMapper.map(I, ShopImageDto.class));
+        }
+
+        return  linksDto;
 
     }
 
