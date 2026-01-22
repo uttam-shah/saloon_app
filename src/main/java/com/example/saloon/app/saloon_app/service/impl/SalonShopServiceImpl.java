@@ -2,8 +2,10 @@ package com.example.saloon.app.saloon_app.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.example.saloon.app.saloon_app.dto.saloonShop.NearbyShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.ShopDistanceProjection;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.OpeningHourDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
@@ -63,15 +65,15 @@ public class SalonShopServiceImpl implements SalonShopService {
                 .serviceCount(0)
                 .appointmentsToday(0)
                 .todayEarnings(0)
-//                .coverImage(registerShopDto.getCover())
                 .address1(registerShopDto.getAddress1())
                 .address2(registerShopDto.getAddress2())
                 .city(registerShopDto.getCity())
                 .state(registerShopDto.getState())
                 .postalCode(registerShopDto.getPostalCode())
                 .country(registerShopDto.getCountry())
-                .latitude(registerShopDto.getLatitude())
-                .longitude(registerShopDto.getLongitude())
+                .latitude(registerShopDto.getLatitude())   // Set these
+                .longitude(registerShopDto.getLongitude()) // Set these
+                // location will be auto-set by @PrePersist
                 .build();
         System.out.println("Mapped Shop: " + newShop);
 
@@ -93,7 +95,7 @@ public class SalonShopServiceImpl implements SalonShopService {
                 ShopOpeningHours hours = ShopOpeningHours.builder()
                         .shop(savedShop)
                         .dayOfWeek(oh.getDayOfWeek())
-                        .isOpen(oh.isOpen())
+                        .open(oh.isOpen())
                         .openTime(oh.getOpenTime())
                         .closeTime(oh.getCloseTime())
                         .build();
@@ -176,6 +178,54 @@ public class SalonShopServiceImpl implements SalonShopService {
         return modelMapper.map(updatedShop, SalonShopResponseDto.class);
     }
 
+    /**
+     * Find nearby salons within specified radius
+     * @param userLat User's current latitude
+     * @param userLon User's current longitude
+     * @param radiusKm Search radius in kilometers (default: 1km)
+     * @param limit Maximum results to return (default: 20)
+     * @return List of nearby shops with distance information
+     */
+    public List<NearbyShopDto> findNearbySalons(
+            double userLat,
+            double userLon,
+            Double radiusKm,
+            Integer limit
+    ) {
+        // Set defaults
+        double radius = (radiusKm != null && radiusKm > 0) ? radiusKm : 1.0;
+        int maxResults = (limit != null && limit > 0) ? limit : 20;
+
+        double radiusMeters = radius * 1000;
+
+        // Use projection-based query (recommended)
+        List<ShopDistanceProjection> projections = salonShopRepository.findNearbyShops(
+                userLat, userLon, radiusMeters, maxResults
+        );
+
+        // Map to DTO
+        return projections.stream()
+                .map(proj -> NearbyShopDto.builder()
+                        .shopId(proj.getShopId())
+                        .shopName(proj.getShopName())
+                        .shopDescription(proj.getShopDescription())
+                        .phone(proj.getPhone())
+                        .coverImage(proj.getCoverImage())
+                        .address1(proj.getAddress1())
+                        .address2(proj.getAddress2())
+                        .city(proj.getCity())
+                        .state(proj.getState())
+                        .postalCode(proj.getPostalCode())
+                        .country(proj.getCountry())
+                        .latitude(proj.getLatitude())
+                        .longitude(proj.getLongitude())
+                        .isActive(proj.getIsActive())
+                        .distanceMeters(Math.round(proj.getDistanceMeters() * 100.0) / 100.0)
+                        .distanceKm(Math.round((proj.getDistanceMeters() / 1000.0) * 100.0) / 100.0)
+                        .build())
+                .toList();
+    }
+
     private void updateOpeningHours(SalonShop shop, List<OpeningHourDto> newHours) {
         // Clear existing hours (triggers orphan removal for deleted items)
         shop.getOpeningHours().clear();
@@ -186,7 +236,7 @@ public class SalonShopServiceImpl implements SalonShopService {
                 ShopOpeningHours hours = ShopOpeningHours.builder()
                         .shop(shop)
                         .dayOfWeek(dto.getDayOfWeek())
-                        .isOpen(dto.isOpen())
+                        .open(dto.isOpen())
                         .openTime(dto.getOpenTime())
                         .closeTime(dto.getCloseTime())
                         .build();

@@ -1,6 +1,7 @@
 package com.example.saloon.app.saloon_app.controller;
 
 import com.cloudinary.Cloudinary;
+import com.example.saloon.app.saloon_app.dto.saloonShop.NearbyShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
@@ -122,6 +123,23 @@ public class ShopController {
     ) {
         salonShopService.reorderPhotos(shopId, imageIdsInOrder);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * GET /api/v1/shops/nearby?latitude=28.6139&longitude=77.2090&radiusKm=1&limit=20
+     */
+    @GetMapping("/nearby")
+    public ResponseEntity<List<NearbyShopDto>> getNearbyShops(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(required = false, defaultValue = "1.0") Double radiusKm,
+            @RequestParam(required = false, defaultValue = "20") Integer limit
+    ) {
+        List<NearbyShopDto> nearbyShops = salonShopService.findNearbySalons(
+                latitude, longitude, radiusKm, limit
+        );
+
+        return ResponseEntity.ok(nearbyShops);
     }
 
 

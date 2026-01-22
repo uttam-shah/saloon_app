@@ -27,7 +27,7 @@ public class ShopOpeningHours {
     private DayOfWeek dayOfWeek;
 
     @Column()
-    private boolean isOpen;
+    private boolean open;
 
     private LocalTime openTime;
     private LocalTime closeTime;

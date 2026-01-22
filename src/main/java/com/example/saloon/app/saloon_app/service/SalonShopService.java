@@ -1,5 +1,6 @@
 package com.example.saloon.app.saloon_app.service;
 
+import com.example.saloon.app.saloon_app.dto.saloonShop.NearbyShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.RegisterShopPatchDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
@@ -29,4 +30,6 @@ public interface SalonShopService {
     void reorderPhotos(String shopId, List<String> imageIdsInOrder);
 
     ShopDetailDto getShopById(String shopId);
+
+    List<NearbyShopDto> findNearbySalons(double latitude, double longitude, Double radiusKm, Integer limit);
 }

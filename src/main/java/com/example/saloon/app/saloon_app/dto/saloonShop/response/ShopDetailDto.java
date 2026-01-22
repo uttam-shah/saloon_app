@@ -30,4 +30,5 @@ public class ShopDetailDto {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private OwnerDto owner;
+    private List<OpeningHourDto> openingHours;
 }

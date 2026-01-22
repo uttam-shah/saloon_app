@@ -10,7 +10,7 @@ import java.time.LocalTime;
 @Builder
 public class OpeningHourDto {
     private DayOfWeek dayOfWeek;  // "MONDAY", "TUESDAY", etc.
-    private boolean isOpen;
+    private boolean open;
     private LocalTime openTime;   // "09:00"
     private LocalTime closeTime;  // "18:00"
 }

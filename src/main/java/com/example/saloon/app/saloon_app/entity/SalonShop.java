@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import jakarta.persistence.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Table(name = "salon_shop")
@@ -88,6 +92,9 @@ public class SalonShop {
     @Column(name = "longitude", precision = 9, scale = 6, nullable = false)
     private BigDecimal longitude;
 
+    @Column(columnDefinition = "geography(Point,4326)")
+    private Point location;  // JTS Point from Hibernate Spati
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -115,6 +122,16 @@ public class SalonShop {
     public void removePhoto(ShopImages photo) {
         photos.remove(photo);
         photo.setShop(null);
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void updateLocation() {
+        if (latitude != null && longitude != null) {
+            GeometryFactory geometryFactory = new GeometryFactory();
+            this.location = geometryFactory.createPoint(new Coordinate(longitude.doubleValue(), latitude.doubleValue()));
+            this.location.setSRID(4326); // WGS84 coordinate system
+        }
     }
 
 
