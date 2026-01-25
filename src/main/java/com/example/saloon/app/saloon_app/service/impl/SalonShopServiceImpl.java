@@ -226,6 +226,15 @@ public class SalonShopServiceImpl implements SalonShopService {
                 .toList();
     }
 
+    @Override
+    public void deleteShop(String shopId) {
+        SalonShop shop = salonShopRepository.findById(shopId)
+                .orElseThrow(()-> new RuntimeException("shopId Not Found"));
+
+        salonShopRepository.delete(shop);
+
+    }
+
     private void updateOpeningHours(SalonShop shop, List<OpeningHourDto> newHours) {
         // Clear existing hours (triggers orphan removal for deleted items)
         shop.getOpeningHours().clear();

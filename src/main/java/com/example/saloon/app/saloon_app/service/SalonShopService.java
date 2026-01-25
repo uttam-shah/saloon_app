@@ -32,4 +32,6 @@ public interface SalonShopService {
     ShopDetailDto getShopById(String shopId);
 
     List<NearbyShopDto> findNearbySalons(double latitude, double longitude, Double radiusKm, Integer limit);
+
+    void deleteShop(String shopId);
 }

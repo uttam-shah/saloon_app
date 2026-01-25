@@ -126,7 +126,7 @@ public class ShopController {
     }
 
     /**
-     * GET /api/v1/shops/nearby?latitude=28.6139&longitude=77.2090&radiusKm=1&limit=20
+     * GET /api/shops/nearby?latitude=28.6139&longitude=77.2090&radiusKm=1&limit=20
      */
     @GetMapping("/nearby")
     public ResponseEntity<List<NearbyShopDto>> getNearbyShops(
@@ -140,6 +140,14 @@ public class ShopController {
         );
 
         return ResponseEntity.ok(nearbyShops);
+    }
+
+    @DeleteMapping("/{shopId}")
+        public ResponseEntity<Void>  deleteShop(
+                @PathVariable String shopId
+        ){
+        salonShopService.deleteShop(shopId);
+        return ResponseEntity.noContent().build();
     }
 
 
