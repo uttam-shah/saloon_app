@@ -3,14 +3,19 @@ package com.example.saloon.app.saloon_app.controller;
 
 import com.example.saloon.app.saloon_app.dto.Appointment.CreateAppointmentDto;
 import com.example.saloon.app.saloon_app.dto.Appointment.PatchAppointmentDto;
+import com.example.saloon.app.saloon_app.dto.Appointment.TimeSlotDto;
 import com.example.saloon.app.saloon_app.dto.Appointment.appointmentResponseDto;
 import com.example.saloon.app.saloon_app.service.AppointmentService;
+import com.example.saloon.app.saloon_app.service.SlotService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -19,6 +24,7 @@ import java.util.List;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+    private final SlotService slotService;
 
     // Post method to create an appointment
     @PostMapping

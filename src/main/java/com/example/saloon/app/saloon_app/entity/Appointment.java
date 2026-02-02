@@ -47,5 +47,16 @@ public class Appointment {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+
+    @Transient
+    public LocalDateTime getEndTime() {
+        if (AppointmentTime == null || service == null || service.getDurationMinutes() == null) {
+            return null;
+        }
+
+        return AppointmentTime.plusMinutes(service.getDurationMinutes());
+    }
+
 }
 

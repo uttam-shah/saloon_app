@@ -2,23 +2,22 @@ package com.example.saloon.app.saloon_app.service.impl;
 
 import com.example.saloon.app.saloon_app.dto.Appointment.CreateAppointmentDto;
 import com.example.saloon.app.saloon_app.dto.Appointment.PatchAppointmentDto;
+import com.example.saloon.app.saloon_app.dto.Appointment.TimeSlotDto;
 import com.example.saloon.app.saloon_app.dto.Appointment.appointmentResponseDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import com.example.saloon.app.saloon_app.dto.UserDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
-import com.example.saloon.app.saloon_app.entity.Appointment;
-import com.example.saloon.app.saloon_app.entity.SalonShop;
-import com.example.saloon.app.saloon_app.entity.ShopService;
-import com.example.saloon.app.saloon_app.entity.Users;
-import com.example.saloon.app.saloon_app.repository.AppointmentRepository;
-import com.example.saloon.app.saloon_app.repository.AuthRepository;
-import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
-import com.example.saloon.app.saloon_app.repository.ShopServiceRepository;
+import com.example.saloon.app.saloon_app.entity.*;
+import com.example.saloon.app.saloon_app.repository.*;
 import com.example.saloon.app.saloon_app.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +30,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final SalonShopRepository salonShopRepository;
     private final ShopServiceRepository shopServiceRepository;
     private final ModelMapper modelMapper;
+
+    private final ShopOpeningHoursRepository openingHourRepository;
 
 //    @Override
 //    public CreateAppointmentResponseDto createAppointment(CreateAppointmentDto dto) {
@@ -124,4 +125,6 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 
     }
+
+
 }
