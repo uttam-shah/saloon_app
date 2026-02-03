@@ -13,9 +13,9 @@ public interface ShopOpeningHoursRepository extends JpaRepository<ShopOpeningHou
 //            String shopId,
 //            DayOfWeek dayOfWeek
 //    );
-    Optional<ShopOpeningHours> findByShopIdAndDayOfWeek(
-            String shopId,
-            DayOfWeek dayOfWeek
-    );
+//    Optional<ShopOpeningHours> findByShopIdAndDayOfWeek(
+//            String shopId,
+//            DayOfWeek dayOfWeek
+//    );
 
 }

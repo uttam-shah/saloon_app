@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,33 +17,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, String
 
     List<Appointment> findByUser_UserId(String userId);
 
-
     @Query("""
     SELECT a FROM Appointment a
     WHERE a.shop.shopId = :shopId
-    AND DATE(a.AppointmentTime) = :date
-    AND a.status = :status
+      AND a.AppointmentTime >= :start
+      AND a.AppointmentTime < :end
 """)
-    List<Appointment> findAppointmentsByShopAndDate(
+    List<Appointment> findAppointmentsByShopAndDateRange(
             @Param("shopId") String shopId,
-            @Param("date") LocalDate date,
-            @Param("status") AppointmentStatus status
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
     );
-
-//
-//    @Query("""
-//    SELECT a FROM Appointment a
-//    WHERE a.shop.shopId = :shopId
-//    AND DATE(a.scheduledDateTime) = :date
-//    AND a.status = :status
-//""")
-//    List<Appointment> findAppointmentsByShopAndDate(
-//            String shopId,
-//            LocalDate date,
-//            AppointmentStatus status
-//    );
-
-
 
 
 }

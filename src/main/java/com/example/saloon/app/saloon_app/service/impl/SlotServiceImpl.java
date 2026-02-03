@@ -3,8 +3,10 @@ package com.example.saloon.app.saloon_app.service.impl;
 import com.example.saloon.app.saloon_app.dto.Appointment.TimeSlotDto;
 import com.example.saloon.app.saloon_app.entity.Appointment;
 import com.example.saloon.app.saloon_app.entity.AppointmentStatus;
+import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.ShopOpeningHours;
 import com.example.saloon.app.saloon_app.repository.AppointmentRepository;
+import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
 import com.example.saloon.app.saloon_app.repository.ShopOpeningHoursRepository;
 import com.example.saloon.app.saloon_app.service.SlotService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,7 @@ public class SlotServiceImpl implements SlotService {
 
     private final ShopOpeningHoursRepository openingHourRepository;
     private final AppointmentRepository appointmentRepository;
+    private final SalonShopRepository salonShopRepository;
 
     @Override
     public List<TimeSlotDto> getAvailableSlots(
@@ -32,24 +36,37 @@ public class SlotServiceImpl implements SlotService {
 
         DayOfWeek day = date.getDayOfWeek();
 
-        ShopOpeningHours openingHour = openingHourRepository
-                .findByShopIdAndDayOfWeek(shopId, day)
-                .orElseThrow(() -> new RuntimeException("Shop closed"));
+        SalonShop shop = salonShopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("shopId not found"));
 
-        if (!openingHour.isOpen()) {
-            return List.of();
+//        shop.getOpeningHours().get(0).getDayOfWeek() == day;
+
+        ShopOpeningHours appointmentDay = new ShopOpeningHours();
+
+        for (ShopOpeningHours shopOpeningHours : shop.getOpeningHours()){
+            if(shopOpeningHours.getDayOfWeek() == day){
+                appointmentDay = shopOpeningHours;
+                break;
+            }
         }
 
+        if(!appointmentDay.isOpen()){
+            System.out.println("Shop Closed");
+        }
+
+
+        LocalDateTime start = date.atStartOfDay();              // 2026-02-04 00:00
+        LocalDateTime end   = date.plusDays(1).atStartOfDay();  // 2026-02-05 00:00
         List<Appointment> appointments =
-                appointmentRepository.findAppointmentsByShopAndDate(
+                appointmentRepository.findAppointmentsByShopAndDateRange(
                         shopId,
-                        date,
-                        AppointmentStatus.PENDING
+                        start,
+                        end
                 );
 
         List<TimeSlotDto> slots = generateSlots(
-                openingHour.getOpenTime(),
-                openingHour.getCloseTime(),
+                appointmentDay.getOpenTime(),
+                appointmentDay.getCloseTime(),
                 serviceDurationMinutes
         );
 
@@ -92,6 +109,8 @@ public class SlotServiceImpl implements SlotService {
             List<Appointment> appointments,
             LocalDate date
     ) {
+
+        System.out.println("Appointments"+ appointments);
 
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
