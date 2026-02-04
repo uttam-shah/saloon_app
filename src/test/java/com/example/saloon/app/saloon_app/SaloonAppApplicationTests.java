@@ -4,6 +4,7 @@ import com.example.saloon.app.saloon_app.entity.Appointment;
 import com.example.saloon.app.saloon_app.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Service;
 
@@ -12,14 +13,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @SpringBootTest
 class SaloonAppApplicationTests {
 
-    private final AppointmentRepository appointmentRepository;
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
     @Test
     void testFindAppointmentsByShopAndDateRange() {
+
+        System.out.println("Test method");
 
         LocalDate date = LocalDate.of(2026, 2, 4);
 
@@ -32,6 +35,8 @@ class SaloonAppApplicationTests {
                         start,
                         end
                 );
+
+        System.out.println(appointments.size()+ " appointments found");
 
         appointments.forEach(a ->
                 System.out.println(a.getAppointmentTime())

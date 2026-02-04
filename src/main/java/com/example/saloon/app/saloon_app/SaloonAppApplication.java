@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @EnableJpaAuditing
 @SpringBootApplication
-public class SaloonAppApplication {
+public class  SaloonAppApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SaloonAppApplication.class, args);
