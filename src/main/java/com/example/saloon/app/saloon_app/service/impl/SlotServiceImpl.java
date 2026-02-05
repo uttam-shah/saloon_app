@@ -34,6 +34,11 @@ public class SlotServiceImpl implements SlotService {
             int serviceDurationMinutes
     ) {
 
+        System.out.println("available Slots method");
+        System.out.println("shopId: "+shopId);
+        System.out.println("date: "+date);
+        System.out.println("serviceDurationMinutes: "+serviceDurationMinutes);
+
         DayOfWeek day = date.getDayOfWeek();
 
         SalonShop shop = salonShopRepository.findById(shopId)
@@ -57,6 +62,7 @@ public class SlotServiceImpl implements SlotService {
 
         LocalDateTime start = date.atStartOfDay();              // 2026-02-04 00:00
         LocalDateTime end   = date.plusDays(1).atStartOfDay();  // 2026-02-05 00:00
+//        System.out.println("start searching appointments");
         List<Appointment> appointments =
                 appointmentRepository.findAppointmentsByShopAndDateRange(
                         shopId,
@@ -64,11 +70,15 @@ public class SlotServiceImpl implements SlotService {
                         end
                 );
 
+//        System.out.println("appontments"+ appointments.size());
+
         List<TimeSlotDto> slots = generateSlots(
                 appointmentDay.getOpenTime(),
                 appointmentDay.getCloseTime(),
                 serviceDurationMinutes
         );
+
+//        System.out.println("marking unavilable slots");
 
         markUnavailableSlots(slots, appointments, date);
 
@@ -110,7 +120,7 @@ public class SlotServiceImpl implements SlotService {
             LocalDate date
     ) {
 
-        System.out.println("Appointments"+ appointments);
+        System.out.println("Appointments"+ appointments.size());
 
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
@@ -125,13 +135,15 @@ public class SlotServiceImpl implements SlotService {
 
             for (Appointment appt : appointments) {
 
-                boolean overlaps =
-                        slot.getStart().isBefore(LocalTime.from(appt.getEndTime())) &&
-                                slot.getEnd().isAfter(LocalTime.from(appt.getAppointmentTime()));
+                if(appt.getStatus() == AppointmentStatus.PENDING || appt.getStatus() == AppointmentStatus.CONFIRMED) {
+                    boolean overlaps =
+                            slot.getStart().isBefore(LocalTime.from(appt.getEndTime())) &&
+                                    slot.getEnd().isAfter(LocalTime.from(appt.getAppointmentTime()));
 
-                if (overlaps) {
-                    slot.setAvailable(false);
-                    break; // 🚀 optimization
+                    if (overlaps) {
+                        slot.setAvailable(false);
+                        break; // 🚀 optimization
+                    }
                 }
             }
         }

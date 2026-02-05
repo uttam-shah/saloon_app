@@ -24,7 +24,7 @@ class SaloonAppApplicationTests {
 
         System.out.println("Test method");
 
-        LocalDate date = LocalDate.of(2026, 2, 4);
+        LocalDate date = LocalDate.of(2026, 2, 5);
 
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end   = date.plusDays(1).atStartOfDay();
