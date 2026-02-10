@@ -18,7 +18,7 @@ FROM eclipse-temurin:21-jdk
 WORKDIR /app
 
 # Copy jar
-COPY target/saloon_app-0.0.1-SNAPSHOT.jar app.jar
+COPY target/*.jar app.jar
 
 # Render gives PORT dynamically
 EXPOSE 8080
