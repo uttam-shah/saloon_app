@@ -46,6 +46,10 @@ public class ShopService {
     @ColumnDefault("true")
     private Boolean isActive = true;
 
+    @Column(name = "is_smart_queue_enabled", nullable = false)
+    @ColumnDefault("false")
+    private Boolean isSmartQueueEnabled = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

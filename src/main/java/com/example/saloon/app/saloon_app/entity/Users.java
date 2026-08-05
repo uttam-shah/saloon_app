@@ -32,6 +32,9 @@ public class Users {
     @Column(name = "password", length = 256, nullable = false)
     private String password;
 
+    @Column(name = "fcm_token", length = 512)
+    private String fcmToken;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

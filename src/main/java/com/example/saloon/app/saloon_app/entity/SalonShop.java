@@ -58,6 +58,10 @@ public class SalonShop {
     @Column(name = "cover_image")
     private String coverImage;
 
+    @Column(name = "pay_at_shop_enabled")
+    @Builder.Default
+    private boolean payAtShopEnabled = true;
+
     @OneToMany(
             mappedBy = "shop",
             cascade = CascadeType.ALL,

@@ -1,10 +1,10 @@
 package com.example.saloon.app.saloon_app.controller;
 
+import com.example.saloon.app.saloon_app.config.security.CurrentUser;
 import com.example.saloon.app.saloon_app.dto.*;
 import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
 import com.example.saloon.app.saloon_app.service.AuthService;
 import jakarta.validation.Valid;
-import jdk.jshell.Snippet;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -33,6 +33,12 @@ public class AuthController {
        return ResponseEntity
                .status(HttpStatus.OK)
                .body(authService.loginUser(loginUserDto));
+   }
+
+   @PatchMapping("/fcm-token")
+   private ResponseEntity<Void> updateFcmToken(@RequestBody @Valid FcmTokenDto dto){
+       authService.updateFcmToken(CurrentUser.id(), dto.getFcmToken());
+       return ResponseEntity.noContent().build();
    }
 
 //   @PostMapping("/register_shop")

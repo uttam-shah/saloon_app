@@ -8,4 +8,5 @@ public class StatusDto {
     private boolean success;
     private String message;
     private UserDto data;
+    private String token;
 }

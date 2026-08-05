@@ -1,5 +1,6 @@
 package com.example.saloon.app.saloon_app.service.impl;
 
+import com.example.saloon.app.saloon_app.config.security.JwtService;
 import com.example.saloon.app.saloon_app.dto.*;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.Users;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,12 +21,15 @@ public class AuthServiceImpl implements AuthService {
     private final AuthRepository authRepository;
     private final SalonShopRepository salonShopRepository;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     public UserDto registerUser(RegisterUserDto registerUserDto) {
         Users newUser = modelMapper.map(registerUserDto, Users.class);
+        newUser.setPassword(passwordEncoder.encode(registerUserDto.getPassword()));
         Users user = authRepository.save(newUser);
-        
+
         return modelMapper.map(user, UserDto.class);
     }
 
@@ -64,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // --- 3. Validate password ---
-        if (!newUser.getPassword().equals(loginUserDto.getPassword())) {
+        if (!passwordEncoder.matches(loginUserDto.getPassword(), newUser.getPassword())) {
             statusDto.setSuccess(false);
             statusDto.setMessage("Incorrect password");
             return statusDto;
@@ -74,7 +79,16 @@ public class AuthServiceImpl implements AuthService {
         statusDto.setSuccess(true);
         statusDto.setMessage("Login success");
         statusDto.setData(modelMapper.map(newUser, UserDto.class));
+        statusDto.setToken(jwtService.generateToken(newUser));
         return statusDto;
+    }
+
+    @Override
+    public void updateFcmToken(String userId, String fcmToken) {
+        Users user = authRepository.findById(userId)
+                .orElseThrow(() -> new com.example.saloon.app.saloon_app.exception.ResourceNotFoundException("User not found"));
+        user.setFcmToken(fcmToken);
+        authRepository.save(user);
     }
 
 

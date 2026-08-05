@@ -27,4 +27,6 @@ public class ShopServiceDto {
 
     @NotNull(message = "Active Status is Required")
     private Boolean isActive;
+
+    private Boolean isSmartQueueEnabled = false;
 }

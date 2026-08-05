@@ -10,10 +10,13 @@ import com.example.saloon.app.saloon_app.dto.saloonShop.response.OpeningHourDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopDetailDto;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.ShopImageDto;
+import com.example.saloon.app.saloon_app.config.security.CurrentUser;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.ShopImages;
 import com.example.saloon.app.saloon_app.entity.ShopOpeningHours;
 import com.example.saloon.app.saloon_app.entity.Users;
+import com.example.saloon.app.saloon_app.exception.ForbiddenException;
+import com.example.saloon.app.saloon_app.exception.ResourceNotFoundException;
 import com.example.saloon.app.saloon_app.repository.AuthRepository;
 import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
 import com.example.saloon.app.saloon_app.repository.ShopImagesRepository;
@@ -81,7 +84,8 @@ public class SalonShopServiceImpl implements SalonShopService {
         newShop.setCreatedAt(null);
         newShop.setUpdatedAt(null);
 
-        Users user = authRepository.findById(registerShopDto.getOwnerId())
+        // Owner is always the authenticated caller — never trust a client-supplied ownerId.
+        Users user = authRepository.findById(CurrentUser.id())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         newShop.setOwner(user);
@@ -118,6 +122,8 @@ public class SalonShopServiceImpl implements SalonShopService {
         // Find existing shop
         SalonShop shop = salonShopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Shop not found with ID: " + shopId));
+
+        requireOwnership(shop);
 
         // Update owner if provided
         if (dto.getOwnerId() != null) {
@@ -231,8 +237,16 @@ public class SalonShopServiceImpl implements SalonShopService {
         SalonShop shop = salonShopRepository.findById(shopId)
                 .orElseThrow(()-> new RuntimeException("shopId Not Found"));
 
+        requireOwnership(shop);
+
         salonShopRepository.delete(shop);
 
+    }
+
+    private void requireOwnership(SalonShop shop) {
+        if (shop.getOwner() == null || !shop.getOwner().getUserId().equals(CurrentUser.id())) {
+            throw new ForbiddenException("You do not own this shop");
+        }
     }
 
     private void updateOpeningHours(SalonShop shop, List<OpeningHourDto> newHours) {
@@ -261,6 +275,8 @@ public class SalonShopServiceImpl implements SalonShopService {
         SalonShop shop = salonShopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Shop not found"));
 
+        requireOwnership(shop);
+
         ShopImages imageToDelete = shop.getPhotos().stream()
                 .filter(img -> img.getImageId().equals(imageId))
                 .findFirst()
@@ -280,6 +296,8 @@ public class SalonShopServiceImpl implements SalonShopService {
     public void reorderPhotos(String shopId, List<String> imageIdsInOrder) {
         SalonShop shop = salonShopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Shop not found"));
+
+        requireOwnership(shop);
 
         for (int i = 0; i < imageIdsInOrder.size(); i++) {
             String imageId = imageIdsInOrder.get(i);
@@ -322,6 +340,8 @@ public class SalonShopServiceImpl implements SalonShopService {
         SalonShop shop = salonShopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Shop no flund"));
 
+        requireOwnership(shop);
+
         shop.setShopName(dto.getShopName());
         shop.setActive(dto.isActive());
         shop.setShopDescription(dto.getShopDescription());
@@ -349,6 +369,7 @@ public class SalonShopServiceImpl implements SalonShopService {
         try {
             SalonShop shop = salonShopRepository.findById(shopId)
                     .orElseThrow(() -> new RuntimeException("userId not found"));
+            requireOwnership(shop);
             var url = uploadImage(file);
             shop.setCoverImage(url);
             salonShopRepository.save(shop);
@@ -377,6 +398,8 @@ public class SalonShopServiceImpl implements SalonShopService {
 
         SalonShop shop = salonShopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("ShopId not found"));
+
+        requireOwnership(shop);
 
         for(String link: links){
             ShopImages image = ShopImages.builder()

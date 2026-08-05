@@ -6,8 +6,10 @@ import com.example.saloon.app.saloon_app.dto.Appointment.TimeSlotDto;
 import com.example.saloon.app.saloon_app.dto.Appointment.appointmentResponseDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import com.example.saloon.app.saloon_app.dto.UserDto;
+import com.example.saloon.app.saloon_app.config.security.CurrentUser;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.entity.*;
+import com.example.saloon.app.saloon_app.exception.ForbiddenException;
 import com.example.saloon.app.saloon_app.repository.*;
 import com.example.saloon.app.saloon_app.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +69,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment appointment = new Appointment();
 
-        Users user = authRepository.findById(dto.getUserId())
+        // Booking is always made as the authenticated caller — never trust a client-supplied userId.
+        Users user = authRepository.findById(CurrentUser.id())
                 .orElseThrow(() -> new RuntimeException("userId not found"));
 
         SalonShop shop = salonShopRepository.findById(dto.getShopId())
@@ -115,6 +118,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     public appointmentResponseDto patchAppointment(PatchAppointmentDto dto, String appointmentId) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("appointmentId not found"));
+
+        String currentUserId = CurrentUser.id();
+        boolean isBookingCustomer = appointment.getUser().getUserId().equals(currentUserId);
+        boolean isShopOwner = appointment.getShop().getOwner().getUserId().equals(currentUserId);
+        if (!isBookingCustomer && !isShopOwner) {
+            throw new ForbiddenException("You do not have access to this appointment");
+        }
 
         if(dto.getStatus() != null) appointment.setStatus(dto.getStatus());
         if(dto.getAppointmentTime() != null) appointment.setAppointmentTime(dto.getAppointmentTime());

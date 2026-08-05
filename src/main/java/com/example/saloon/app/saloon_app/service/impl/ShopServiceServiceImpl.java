@@ -3,10 +3,12 @@ package com.example.saloon.app.saloon_app.service.impl;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServicePatchDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
+import com.example.saloon.app.saloon_app.config.security.CurrentUser;
 import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.ShopService;
 import com.example.saloon.app.saloon_app.entity.Users;
+import com.example.saloon.app.saloon_app.exception.ForbiddenException;
 import com.example.saloon.app.saloon_app.repository.AuthRepository;
 import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
 import com.example.saloon.app.saloon_app.repository.ShopServiceRepository;
@@ -37,6 +39,8 @@ public class ShopServiceServiceImpl implements ShopServiceService {
 
         SalonShop salonShop = salonShopRepository.findById(shopServiceDto.getShopId())
                 .orElseThrow(() -> new RuntimeException("ShopId not found"));
+
+        requireOwnership(salonShop);
 
         newShopService.setShop(salonShop);
 
@@ -79,12 +83,15 @@ public class ShopServiceServiceImpl implements ShopServiceService {
         ShopService service = shopServiceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
+        requireOwnership(service.getShop());
+
         // Replace all fields
         service.setName(dto.getName());
         service.setDescription(dto.getDescription());
         service.setDurationMinutes(dto.getDurationMinutes());
         service.setPrice(dto.getPrice());
         service.setIsActive(dto.getIsActive());
+        service.setIsSmartQueueEnabled(dto.getIsSmartQueueEnabled() != null ? dto.getIsSmartQueueEnabled() : false);
 
         // Update shop if required
         SalonShop shop = salonShopRepository.findById(dto.getShopId())
@@ -101,14 +108,23 @@ public class ShopServiceServiceImpl implements ShopServiceService {
         ShopService service = shopServiceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found"));
 
+        requireOwnership(service.getShop());
+
         if (dto.getName() != null) service.setName(dto.getName());
         if (dto.getDescription() != null) service.setDescription(dto.getDescription());
         if (dto.getDurationMinutes() != null) service.setDurationMinutes(dto.getDurationMinutes());
         if (dto.getPrice() != null) service.setPrice(dto.getPrice());
         if (dto.getIsActive() != null) service.setIsActive(dto.getIsActive());
+        if (dto.getIsSmartQueueEnabled() != null) service.setIsSmartQueueEnabled(dto.getIsSmartQueueEnabled());
 
         ShopService saved = shopServiceRepository.save(service);
         return modelMapper.map(saved, ShopServiceResponseDto.class);
+    }
+
+    private void requireOwnership(SalonShop shop) {
+        if (shop.getOwner() == null || !shop.getOwner().getUserId().equals(CurrentUser.id())) {
+            throw new ForbiddenException("You do not own this shop");
+        }
     }
 
 }

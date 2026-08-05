@@ -11,5 +11,6 @@ public class ShopServicePatchDto {
     private Integer durationMinutes;
     private BigDecimal price;
     private Boolean isActive;
+    private Boolean isSmartQueueEnabled;
 }
 

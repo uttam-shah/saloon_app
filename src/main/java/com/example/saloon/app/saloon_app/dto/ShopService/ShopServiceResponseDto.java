@@ -17,6 +17,7 @@ public class ShopServiceResponseDto {
     private Integer durationMinutes;
     private BigDecimal price;
     private Boolean isActive;
+    private Boolean isSmartQueueEnabled;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

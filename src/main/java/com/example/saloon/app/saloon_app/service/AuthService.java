@@ -9,5 +9,7 @@ public interface AuthService {
 
     UserDto registerUser(RegisterUserDto registerUserDto);
 
+    void updateFcmToken(String userId, String fcmToken);
+
 //    RegisterShopDto registerShop(@Valid RegisterShopDto registerShopDto);
 }
