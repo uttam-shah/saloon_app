@@ -121,6 +121,16 @@ public class ShopServiceServiceImpl implements ShopServiceService {
         return modelMapper.map(saved, ShopServiceResponseDto.class);
     }
 
+    @Override
+    public List<ShopServiceResponseDto> getTrendingServices(double latitude, double longitude, Double radiusKm, Integer limit) {
+        List<ShopService> services = shopServiceRepository.findAll();
+
+        return  services.stream()
+                .map(service -> modelMapper.map(services, ShopServiceResponseDto.class))
+                .collect(Collectors.toList());
+
+    }
+
     private void requireOwnership(SalonShop shop) {
         if (shop.getOwner() == null || !shop.getOwner().getUserId().equals(CurrentUser.id())) {
             throw new ForbiddenException("You do not own this shop");

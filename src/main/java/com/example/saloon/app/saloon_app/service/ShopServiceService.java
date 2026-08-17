@@ -17,4 +17,6 @@ public interface ShopServiceService {
     ShopServiceResponseDto updateService(String serviceId, @Valid ShopServiceDto shopServiceDto);
 
     ShopServiceResponseDto patchService(String serviceId, ShopServicePatchDto patchDto);
+
+    List<ShopServiceResponseDto> getTrendingServices(double latitude, double longitude, Double radiusKm, Integer limit);
 }

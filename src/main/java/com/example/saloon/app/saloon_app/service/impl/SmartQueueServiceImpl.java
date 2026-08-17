@@ -51,6 +51,8 @@ public class SmartQueueServiceImpl implements SmartQueueService {
     @Override
     @Transactional
     public SmartQueueEntryResponseDto join(JoinQueueDto dto, String userId) {
+        System.out.println("joint the queue");
+
         Users user = authRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 

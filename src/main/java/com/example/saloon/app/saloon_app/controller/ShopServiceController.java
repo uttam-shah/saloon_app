@@ -49,6 +49,20 @@ public class ShopServiceController {
                 .body(shopServiceService.getServicesByShopId(shopId));
     }
 
+    // GET Trending Services
+    @GetMapping("/shop/trending")
+    public ResponseEntity<List<ShopServiceResponseDto>> getTrendingServices(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(required = false, defaultValue = "1.0") Double radiusKm,
+            @RequestParam(required = false, defaultValue = "20") Integer limit){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(shopServiceService.getTrendingServices(
+                        latitude, longitude, radiusKm, limit
+                ));
+    }
+
     // put Mapping for full update
     @PutMapping("/{serviceId}")
     public ResponseEntity<ShopServiceResponseDto> updateService(
