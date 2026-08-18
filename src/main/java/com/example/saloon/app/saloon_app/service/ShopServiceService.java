@@ -1,9 +1,11 @@
 package com.example.saloon.app.saloon_app.service;
 
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceDto;
+import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceImageDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServicePatchDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,4 +21,8 @@ public interface ShopServiceService {
     ShopServiceResponseDto patchService(String serviceId, ShopServicePatchDto patchDto);
 
     List<ShopServiceResponseDto> getTrendingServices(double latitude, double longitude, Double radiusKm, Integer limit);
+
+    List<ShopServiceImageDto> uploadServiceImages(List<MultipartFile> files, String serviceId);
+
+    void deleteServiceImage(String serviceId, String imageId);
 }

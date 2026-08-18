@@ -9,4 +9,5 @@ import java.util.List;
 public interface ShopServiceRepository extends JpaRepository<ShopService, String> {
     List<ShopService> findByShop_Owner_UserId(String userId);
     List<ShopService> findByShop_ShopId(String shopId);
+    List<ShopService> findByShop_ShopIdInAndIsActiveTrue(List<String> shopIds);
 }

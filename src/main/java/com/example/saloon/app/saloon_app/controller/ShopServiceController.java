@@ -2,6 +2,7 @@ package com.example.saloon.app.saloon_app.controller;
 
 
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceDto;
+import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceImageDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServicePatchDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import com.example.saloon.app.saloon_app.service.ShopServiceService;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -85,6 +87,23 @@ public class ShopServiceController {
         );
     }
 
+    // Upload one or more images for a service
+    @PostMapping("/{serviceId}/images")
+    public ResponseEntity<List<ShopServiceImageDto>> uploadServiceImages(
+            @PathVariable String serviceId,
+            @RequestParam("images") List<MultipartFile> files) {
 
+        return ResponseEntity.ok(shopServiceService.uploadServiceImages(files, serviceId));
+    }
+
+    // Soft-delete a service image
+    @DeleteMapping("/{serviceId}/images/{imageId}")
+    public ResponseEntity<Void> deleteServiceImage(
+            @PathVariable String serviceId,
+            @PathVariable String imageId) {
+
+        shopServiceService.deleteServiceImage(serviceId, imageId);
+        return ResponseEntity.noContent().build();
+    }
 
 }

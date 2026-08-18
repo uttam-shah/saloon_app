@@ -11,6 +11,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -57,6 +59,15 @@ public class ShopService {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToMany(
+            mappedBy = "service",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("sequence ASC")
+    @Builder.Default
+    private List<ShopServiceImage> images = new LinkedList<>();
 }
 
 

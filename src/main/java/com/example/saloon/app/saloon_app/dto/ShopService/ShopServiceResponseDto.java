@@ -20,6 +20,8 @@ public class ShopServiceResponseDto {
     private Boolean isSmartQueueEnabled;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String coverImage;
+    private List<ShopServiceImageDto> images;
 }
 
 @Data

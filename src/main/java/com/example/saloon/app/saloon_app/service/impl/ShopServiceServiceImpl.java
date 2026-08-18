@@ -1,24 +1,32 @@
 package com.example.saloon.app.saloon_app.service.impl;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceDto;
+import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceImageDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServicePatchDto;
 import com.example.saloon.app.saloon_app.dto.ShopService.ShopServiceResponseDto;
 import com.example.saloon.app.saloon_app.config.security.CurrentUser;
-import com.example.saloon.app.saloon_app.dto.saloonShop.response.SalonShopResponseDto;
+import com.example.saloon.app.saloon_app.dto.saloonShop.ShopDistanceProjection;
 import com.example.saloon.app.saloon_app.entity.SalonShop;
 import com.example.saloon.app.saloon_app.entity.ShopService;
+import com.example.saloon.app.saloon_app.entity.ShopServiceImage;
 import com.example.saloon.app.saloon_app.entity.Users;
 import com.example.saloon.app.saloon_app.exception.ForbiddenException;
 import com.example.saloon.app.saloon_app.repository.AuthRepository;
 import com.example.saloon.app.saloon_app.repository.SalonShopRepository;
+import com.example.saloon.app.saloon_app.repository.ShopServiceImageRepository;
 import com.example.saloon.app.saloon_app.repository.ShopServiceRepository;
 import com.example.saloon.app.saloon_app.service.ShopServiceService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,9 +34,11 @@ import java.util.stream.Collectors;
 public class ShopServiceServiceImpl implements ShopServiceService {
 
     private final ShopServiceRepository shopServiceRepository;
+    private final ShopServiceImageRepository shopServiceImageRepository;
     private final SalonShopRepository salonShopRepository;
     private final  ModelMapper modelMapper;
     private  final AuthRepository authRepository;
+    private final Cloudinary cloudinary;
 
     @Override
     public ShopServiceResponseDto registerService(ShopServiceDto shopServiceDto) {
@@ -46,12 +56,7 @@ public class ShopServiceServiceImpl implements ShopServiceService {
 
         ShopService saved = shopServiceRepository.save(newShopService);
 
-        ShopServiceResponseDto response = modelMapper.map(saved, ShopServiceResponseDto.class);
-
-        // manually set shopId instead of entity
-//        response.setShop(modelMapper.map(salonShop, SalonShopResponseDto.class));
-
-        return response;
+        return toResponseDto(saved);
     }
 
     @Override
@@ -60,9 +65,8 @@ public class ShopServiceServiceImpl implements ShopServiceService {
                 .orElseThrow(() -> new RuntimeException("user not found"));
         List<ShopService> services = shopServiceRepository.findByShop_Owner_UserId(userId);
 
-        // Convert List<ShopService> → List<ShopServiceResponseDto>
         return services.stream()
-                .map(service -> modelMapper.map(service, ShopServiceResponseDto.class))
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -74,7 +78,7 @@ public class ShopServiceServiceImpl implements ShopServiceService {
         List<ShopService> services = shopServiceRepository.findByShop_ShopId(shopId);
 
         return services.stream()
-                .map(service -> modelMapper.map(service, ShopServiceResponseDto.class))
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -99,7 +103,7 @@ public class ShopServiceServiceImpl implements ShopServiceService {
         service.setShop(shop);
 
         ShopService saved = shopServiceRepository.save(service);
-        return modelMapper.map(saved, ShopServiceResponseDto.class);
+        return toResponseDto(saved);
 
     }
 
@@ -118,17 +122,96 @@ public class ShopServiceServiceImpl implements ShopServiceService {
         if (dto.getIsSmartQueueEnabled() != null) service.setIsSmartQueueEnabled(dto.getIsSmartQueueEnabled());
 
         ShopService saved = shopServiceRepository.save(service);
-        return modelMapper.map(saved, ShopServiceResponseDto.class);
+        return toResponseDto(saved);
     }
 
     @Override
     public List<ShopServiceResponseDto> getTrendingServices(double latitude, double longitude, Double radiusKm, Integer limit) {
-        List<ShopService> services = shopServiceRepository.findAll();
+        double radius = (radiusKm != null && radiusKm > 0) ? radiusKm : 1.0;
+        int maxResults = (limit != null && limit > 0) ? limit : 20;
 
-        return  services.stream()
-                .map(service -> modelMapper.map(services, ShopServiceResponseDto.class))
+        List<ShopDistanceProjection> nearbyShops = salonShopRepository.findNearbyShops(
+                latitude, longitude, radius * 1000, maxResults
+        );
+
+        List<String> shopIds = nearbyShops.stream()
+                .map(ShopDistanceProjection::getShopId)
                 .collect(Collectors.toList());
 
+        if (shopIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<ShopService> services = shopServiceRepository.findByShop_ShopIdInAndIsActiveTrue(shopIds);
+
+        return services.stream()
+                .limit(maxResults)
+                .map(this::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ShopServiceImageDto> uploadServiceImages(List<MultipartFile> files, String serviceId) {
+        ShopService service = shopServiceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Service not found"));
+
+        requireOwnership(service.getShop());
+
+        List<ShopServiceImageDto> uploaded = new LinkedList<>();
+        int nextSequence = service.getImages().size();
+
+        for (MultipartFile file : files) {
+            try {
+                String url = uploadImage(file);
+                ShopServiceImage image = ShopServiceImage.builder()
+                        .service(service)
+                        .imageUrl(url)
+                        .sequence(nextSequence++)
+                        .isDeleted(false)
+                        .build();
+                ShopServiceImage saved = shopServiceImageRepository.save(image);
+                uploaded.add(modelMapper.map(saved, ShopServiceImageDto.class));
+            } catch (IOException e) {
+                throw new RuntimeException("Exception while uploading service image: ", e);
+            }
+        }
+
+        return uploaded;
+    }
+
+    @Override
+    public void deleteServiceImage(String serviceId, String imageId) {
+        ShopService service = shopServiceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Service not found"));
+
+        requireOwnership(service.getShop());
+
+        ShopServiceImage image = shopServiceImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        image.setDeleted(true);
+        shopServiceImageRepository.save(image);
+    }
+
+    private ShopServiceResponseDto toResponseDto(ShopService service) {
+        ShopServiceResponseDto dto = modelMapper.map(service, ShopServiceResponseDto.class);
+
+        List<ShopServiceImageDto> images = service.getImages().stream()
+                .filter(img -> !img.isDeleted())
+                .map(img -> modelMapper.map(img, ShopServiceImageDto.class))
+                .collect(Collectors.toList());
+
+        dto.setImages(images);
+        dto.setCoverImage(images.isEmpty() ? null : images.get(0).getImageUrl());
+
+        return dto;
+    }
+
+    private String uploadImage(MultipartFile file) throws IOException {
+        Map uploadResult = cloudinary.uploader()
+                .upload(file.getBytes(), ObjectUtils.emptyMap());
+
+        return uploadResult.get("secure_url").toString();
     }
 
     private void requireOwnership(SalonShop shop) {
